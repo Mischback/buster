@@ -6,10 +6,14 @@ import { Config } from "stdio/dist/getopt";
 
 /* internal imports */
 import { BusterError } from "./errors";
+import { logger } from "./logging";
 
 export interface BusterConfig {
+  outFile: string;
   rootDirectory: string;
 }
+
+const defaultOutFile = "asset-manifest.json";
 
 /**
  * Define the accepted command line options as required by {@link getopt}.
@@ -20,6 +24,13 @@ export const cmdLineOptions: Config = {
     default: false,
     description: "Flag to activate debug mode",
     key: "d",
+    required: false,
+  },
+  outFile: {
+    args: 1,
+    default: false,
+    description: `Path and filename of the output file (default: ${defaultOutFile})`,
+    key: "o",
     required: false,
   },
   quiet: {
@@ -62,7 +73,16 @@ export function getConfig(argv: string[]): Promise<BusterConfig> {
       tmpRootDir = cmdLineParams.rootDirectory as string;
     }
 
+    let tmpOutFile: string;
+    if (cmdLineParams.outFile === false) {
+      tmpOutFile = defaultOutFile;
+      logger.info(`No output file specified, using "${tmpOutFile}"`);
+    } else {
+      tmpOutFile = cmdLineParams.outFile as string;
+    }
+
     return resolve({
+      outFile: tmpOutFile,
       rootDirectory: tmpRootDir,
     } as BusterConfig);
   });
