@@ -25,6 +25,14 @@ class BusterHashWalkerFilterError extends BusterHashWalkerError {
   }
 }
 
+/**
+ * Match a given filename against a list of extensions
+ *
+ * @param filename - Reference to a file, provided as string
+ * @param extensions - A list of extensions, derived from {@link BusterConfig}
+ * @returns - A Promise, resolving to a filename (as string) that matches the
+ *            list of extensions
+ */
 function filterByExtension(
   filename: string,
   extensions: string[]
@@ -105,8 +113,6 @@ export function hashWalker(
                   }
                 );
               } else {
-                logger.debug(file);
-
                 filterByExtension(file, config.extensions)
                   .then((file) => {
                     logger.debug(`Filtered: ${file}`);
