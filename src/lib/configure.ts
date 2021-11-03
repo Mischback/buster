@@ -9,11 +9,19 @@ import { BusterError } from "./errors";
 import { logger } from "./logging";
 
 export interface BusterConfig {
+  hashLength: number;
   outFile: string;
   rootDirectory: string;
 }
 
+/* Provide some default settings
+ *
+ * We're kind of "misusing" stdio.getopt(), by providing a default value of
+ * "false" for every accepted parameter and then parse the provided parameters
+ * in {@see getConfig}.
+ */
 const defaultOutFile = "asset-manifest.json";
+const defaultHashLength = 10;
 
 /**
  * Define the accepted command line options as required by {@link getopt}.
@@ -24,6 +32,12 @@ export const cmdLineOptions: Config = {
     default: false,
     description: "Flag to activate debug mode",
     key: "d",
+    required: false,
+  },
+  hashLength: {
+    args: 1,
+    default: false,
+    description: "The length of the hash string to append",
     required: false,
   },
   outFile: {
@@ -73,6 +87,14 @@ export function getConfig(argv: string[]): Promise<BusterConfig> {
       tmpRootDir = cmdLineParams.rootDirectory as string;
     }
 
+    let tmpHashLength: number;
+    if (cmdLineParams.hashLength === false) {
+      tmpHashLength = defaultHashLength;
+      logger.info(`No hash length specified, using "${tmpHashLength}"`);
+    } else {
+      tmpHashLength = parseInt(cmdLineParams.hashLength as string);
+    }
+
     let tmpOutFile: string;
     if (cmdLineParams.outFile === false) {
       tmpOutFile = defaultOutFile;
@@ -82,6 +104,7 @@ export function getConfig(argv: string[]): Promise<BusterConfig> {
     }
 
     return resolve({
+      hashLength: tmpHashLength,
       outFile: tmpOutFile,
       rootDirectory: tmpRootDir,
     } as BusterConfig);
