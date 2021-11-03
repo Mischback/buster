@@ -17,9 +17,15 @@ const { R_OK, W_OK } = constants;
 import { BusterError } from "./errors";
 import { logger } from "./logging";
 
+export type BusterConfigMode = "copy" | "rename";
+
+export const MODE_COPY = "copy";
+export const MODE_RENAME = "rename";
+
 export interface BusterConfig {
   extensions: string[];
   hashLength: number;
+  mode: BusterConfigMode;
   outFile: string;
   rootDirectory: string;
 }
@@ -58,6 +64,13 @@ export const cmdLineOptions: Config = {
     args: 1,
     default: false,
     description: "The length of the hash string to append",
+    required: false,
+  },
+  mode: {
+    args: 1,
+    default: false,
+    description: "Operation mode, either files are copied or simply renamed",
+    key: "m",
     required: false,
   },
   outFile: {
@@ -187,6 +200,14 @@ export function getConfig(argv: string[]): Promise<BusterConfig> {
       tmpHashLength = parseInt(cmdLineParams.hashLength as string);
     }
 
+    let tmpMode: BusterConfigMode;
+    if (cmdLineParams.mode === false) {
+      tmpMode = MODE_COPY;
+      logger.info(`No mode specified, using "${tmpMode}"`);
+    } else {
+      tmpMode = cmdLineParams.mode as BusterConfigMode;
+    }
+
     let tmpOutFile: string;
     if (cmdLineParams.outFile === false) {
       tmpOutFile = defaultOutFile;
@@ -198,6 +219,7 @@ export function getConfig(argv: string[]): Promise<BusterConfig> {
     return resolve({
       extensions: tmpExtensions,
       hashLength: tmpHashLength,
+      mode: tmpMode,
       outFile: tmpOutFile,
       rootDirectory: tmpRootDir,
     } as BusterConfig);
