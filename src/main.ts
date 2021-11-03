@@ -8,6 +8,7 @@ import {
   cmdLineOptions,
   getConfig,
 } from "./lib/configure";
+import { hashWalker } from "./lib/hashwalker";
 import {
   applyDebugConfiguration,
   logger,
@@ -58,6 +59,11 @@ export function busterMain(argv: string[]): Promise<number> {
       .then(checkConfig)
       .then((config) => {
         logger.debug(config);
+        return Promise.resolve(config);
+      })
+      .then(hashWalker)
+      .then((result) => {
+        logger.info(result);
         return resolve(EXIT_SUCCESS);
       })
       .catch((err) => {
