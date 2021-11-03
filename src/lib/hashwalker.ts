@@ -2,7 +2,7 @@
 
 /* library imports */
 import { readdir, stat } from "fs/promises";
-import { dirname, resolve as pathresolve } from "path";
+import { dirname, extname, resolve as pathresolve } from "path";
 
 /* internal imports */
 import { BusterConfig } from "./configure";
@@ -19,6 +19,38 @@ export class BusterHashWalkerError extends BusterError {
   }
 }
 
+class BusterHashWalkerFilterError extends BusterHashWalkerError {
+  constructor(message: string) {
+    super(message);
+  }
+}
+
+function filterByExtension(
+  filename: string,
+  extensions: string[]
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    /* determine the file extension */
+    const fileExtension = extname(filename).substring(1);
+
+    if (extensions.includes(fileExtension)) return resolve(filename);
+
+    return reject(
+      new BusterHashWalkerFilterError(
+        `${filename}: extension "${fileExtension}" not in extensions`
+      )
+    );
+  });
+}
+
+/**
+ * The actual file system walker to process the files
+ *
+ * @param config - A {@link BusterConfig} instance
+ * @param commonPathLength - A number, determining the common path length
+ * @returns - A Promise, resolving to a dictionary of filenames as key with
+ *            their corresponding, hashed, equivalents
+ */
 export function hashWalker(
   config: BusterConfig,
   commonPathLength = -1
@@ -73,9 +105,19 @@ export function hashWalker(
                   }
                 );
               } else {
-                /* TODO: REAL LOGIC GOES HERE! */
                 logger.debug(file);
-                if (--pending === 0) return resolve(results);
+
+                filterByExtension(file, config.extensions)
+                  .then((file) => {
+                    logger.debug(`Filtered: ${file}`);
+                  })
+                  .catch((err) => {
+                    if (!(err instanceof BusterHashWalkerFilterError))
+                      return reject(err);
+                  })
+                  .finally(() => {
+                    if (--pending === 0) return resolve(results);
+                  });
               }
             })
             .catch((err) => {
