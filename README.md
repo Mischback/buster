@@ -1,3 +1,3 @@
-# node-module-skeleton
+# buster
 
-A skeleton to create TypeScript-based NodeJS modules
+Hash static assets and append the hash to their file names.
