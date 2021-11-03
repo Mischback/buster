@@ -122,12 +122,13 @@ export function checkConfig(config: BusterConfig): Promise<BusterConfig> {
       );
     }
 
-    return resolve({
-      extensions: config.extensions,
-      hashLength: config.hashLength,
-      outFile: normalizedOutFile,
-      rootDirectory: normalizedRootDir,
-    } as BusterConfig);
+    return resolve(
+      Object.assign(
+        config,
+        { rootDirectory: normalizedRootDir },
+        { outFile: normalizedOutFile }
+      ) as BusterConfig
+    );
   });
 }
 
