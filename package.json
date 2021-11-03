@@ -37,5 +37,8 @@
       "tsconfig.build.json"
     ],
     "packageManager": "npm"
+  },
+  "dependencies": {
+    "tslog": "^3.2.2"
   }
 }
