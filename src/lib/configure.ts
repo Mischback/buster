@@ -1,8 +1,18 @@
 // SPDX-License-Identifier: MIT
 
 /* library imports */
+import { accessSync, constants } from "fs";
+import {
+  basename,
+  dirname,
+  join,
+  normalize,
+  resolve as pathresolve,
+} from "path";
 import { getopt } from "stdio";
 import { Config } from "stdio/dist/getopt";
+
+const { R_OK, W_OK } = constants;
 
 /* internal imports */
 import { BusterError } from "./errors";
@@ -77,6 +87,48 @@ export class BusterConfigError extends BusterError {
   constructor(message: string) {
     super(message);
   }
+}
+
+export function checkConfig(config: BusterConfig): Promise<BusterConfig> {
+  return new Promise((resolve, reject) => {
+    const normalizedRootDir = normalize(pathresolve(config.rootDirectory));
+
+    /* Verify that the root directory can be read and written to */
+    try {
+      accessSync(normalizedRootDir, R_OK | W_OK);
+    } catch (err) {
+      return reject(
+        new BusterConfigError(
+          "The specified root directory can not be read/written to"
+        )
+      );
+    }
+
+    /* Verify that the output file can be written to */
+    let normalizedOutFile = config.outFile;
+    if (normalizedOutFile === basename(normalizedOutFile))
+      normalizedOutFile = normalize(
+        pathresolve(join(normalizedRootDir, normalizedOutFile))
+      );
+    else normalizedOutFile = normalize(pathresolve(normalizedOutFile));
+
+    try {
+      accessSync(dirname(normalizedOutFile), R_OK | W_OK);
+    } catch (err) {
+      return reject(
+        new BusterConfigError(
+          "The specified outfile can not be read/written to"
+        )
+      );
+    }
+
+    return resolve({
+      extensions: config.extensions,
+      hashLength: config.hashLength,
+      outFile: normalizedOutFile,
+      rootDirectory: normalizedRootDir,
+    } as BusterConfig);
+  });
 }
 
 export function getConfig(argv: string[]): Promise<BusterConfig> {

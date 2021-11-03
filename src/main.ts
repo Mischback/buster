@@ -2,7 +2,12 @@
 
 import { Config } from "stdio/dist/getopt";
 
-import { BusterConfigError, cmdLineOptions, getConfig } from "./lib/configure";
+import {
+  BusterConfigError,
+  checkConfig,
+  cmdLineOptions,
+  getConfig,
+} from "./lib/configure";
 import {
   applyDebugConfiguration,
   logger,
@@ -50,6 +55,7 @@ export function busterMain(argv: string[]): Promise<number> {
     }
 
     getConfig(argv)
+      .then(checkConfig)
       .then((config) => {
         logger.debug(config);
         return resolve(EXIT_SUCCESS);
