@@ -2,7 +2,7 @@
 
 import { Config } from "stdio/dist/getopt";
 
-import { cmdLineOptions } from "./lib/configure";
+import { BusterConfigError, cmdLineOptions, getConfig } from "./lib/configure";
 import {
   applyDebugConfiguration,
   logger,
@@ -13,7 +13,7 @@ import {
 const EXIT_SUCCESS = 0; // sysexits.h: 0 -> successful termination
 // const EXIT_DATA_ERROR = 65; // sysexits.h: 65 -> input data was incorrect in some way
 // const EXIT_INTERNAL_ERROR = 70; // sysexits.h: 70 -> internal software error
-// const EXIT_CONFIG_ERROR = 78; // sysexits.h: 78 -> configuration error
+const EXIT_CONFIG_ERROR = 78; // sysexits.h: 78 -> configuration error
 const EXIT_SIGINT = 130; // bash scripting guide: 130 -> terminated by ctrl-c
 
 /* *** TYPE DEFINITIONS *** */
@@ -49,7 +49,17 @@ export function busterMain(argv: string[]): Promise<number> {
       applyDebugConfiguration();
     }
 
-    logger.debug(argv);
-    return resolve(EXIT_SUCCESS);
+    getConfig(argv)
+      .then((config) => {
+        logger.debug(config);
+        return resolve(EXIT_SUCCESS);
+      })
+      .catch((err) => {
+        if (err instanceof BusterConfigError) {
+          logger.error(err.message);
+          logger.fatal("Could not determine configuration for buster!");
+          return reject(EXIT_CONFIG_ERROR);
+        }
+      });
   });
 }
