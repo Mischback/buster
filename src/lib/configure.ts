@@ -10,4 +10,11 @@ export const cmdLineOptions: Config = {
     key: "d",
     required: false,
   },
+  quiet: {
+    args: 0,
+    default: false,
+    description: "Flag to activate quiet mode",
+    key: "q",
+    required: false,
+  },
 };
