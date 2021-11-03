@@ -9,6 +9,7 @@ import { BusterError } from "./errors";
 import { logger } from "./logging";
 
 export interface BusterConfig {
+  extensions: string[];
   hashLength: number;
   outFile: string;
   rootDirectory: string;
@@ -20,13 +21,23 @@ export interface BusterConfig {
  * "false" for every accepted parameter and then parse the provided parameters
  * in {@see getConfig}.
  */
-const defaultOutFile = "asset-manifest.json";
+const defaultExtensions = ["css", "js"];
 const defaultHashLength = 10;
+const defaultOutFile = "asset-manifest.json";
 
 /**
  * Define the accepted command line options as required by {@link getopt}.
  */
 export const cmdLineOptions: Config = {
+  extension: {
+    args: "*",
+    default: false,
+    description:
+      "A file extension to include in processing. May be specified multiple times. (default: [css, js])",
+    key: "e",
+    multiple: true,
+    required: false,
+  },
   debug: {
     args: 0,
     default: false,
@@ -87,6 +98,19 @@ export function getConfig(argv: string[]): Promise<BusterConfig> {
       tmpRootDir = cmdLineParams.rootDirectory as string;
     }
 
+    let tmpExtensions: string[];
+    if (cmdLineParams.extension === false) {
+      tmpExtensions = defaultExtensions;
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      logger.info(`No extensions specified, using ${tmpExtensions}`);
+    } else {
+      if (typeof cmdLineParams.extension === "string") {
+        tmpExtensions = [cmdLineParams.extension];
+      } else {
+        tmpExtensions = cmdLineParams.extension as string[];
+      }
+    }
+
     let tmpHashLength: number;
     if (cmdLineParams.hashLength === false) {
       tmpHashLength = defaultHashLength;
@@ -104,6 +128,7 @@ export function getConfig(argv: string[]): Promise<BusterConfig> {
     }
 
     return resolve({
+      extensions: tmpExtensions,
       hashLength: tmpHashLength,
       outFile: tmpOutFile,
       rootDirectory: tmpRootDir,
