@@ -11,7 +11,6 @@ import {
 } from "path";
 import { getopt } from "stdio";
 import { Config } from "stdio/dist/getopt";
-
 const { R_OK, W_OK } = constants;
 
 /* internal imports */
@@ -89,6 +88,9 @@ export class BusterConfigError extends BusterError {
   }
 }
 
+/**
+ * Checks provided configuration values and verifies that the given paths are accessible.
+ */
 export function checkConfig(config: BusterConfig): Promise<BusterConfig> {
   return new Promise((resolve, reject) => {
     const normalizedRootDir = normalize(pathresolve(config.rootDirectory));
@@ -105,6 +107,7 @@ export function checkConfig(config: BusterConfig): Promise<BusterConfig> {
     }
 
     /* Verify that the output file can be written to */
+    // FIXME: Check what the if-block actually does!
     let normalizedOutFile = config.outFile;
     if (normalizedOutFile === basename(normalizedOutFile))
       normalizedOutFile = normalize(
@@ -117,7 +120,7 @@ export function checkConfig(config: BusterConfig): Promise<BusterConfig> {
     } catch (err) {
       return reject(
         new BusterConfigError(
-          "The specified outfile can not be read/written to"
+          "The specified output file can not be read/written to"
         )
       );
     }
@@ -132,6 +135,18 @@ export function checkConfig(config: BusterConfig): Promise<BusterConfig> {
   });
 }
 
+/**
+ * Determine the configuration for processing.
+ *
+ * @param argv - The argument vector which was was used to call the module
+ * @returns - A Promise, resolving to a {@link BusterConfig} instance
+ *
+ * The function provides sane defaults for most of the configuration options and
+ * enforces the specification of "rootDirectory" parameter.
+ *
+ * {@link getopt} is kind of misused, as the defaults are checked and provided
+ * here. Probably this could be improved.
+ */
 export function getConfig(argv: string[]): Promise<BusterConfig> {
   return new Promise((resolve, reject) => {
     const cmdLineParams = getopt(cmdLineOptions, argv);
