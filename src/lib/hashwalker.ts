@@ -4,7 +4,7 @@
 import { createHash } from "crypto";
 import { createReadStream } from "fs";
 import { readdir, stat } from "fs/promises";
-import { dirname, extname, resolve as pathresolve } from "path";
+import { basename, dirname, extname, join, resolve as pathresolve } from "path";
 
 /* internal imports */
 import { BusterConfig } from "./configure";
@@ -25,6 +25,34 @@ class BusterHashWalkerFilterError extends BusterHashWalkerError {
   constructor(message: string) {
     super(message);
   }
+}
+
+/**
+ * Append the hash (or part of it) to the filename
+ *
+ * @param filename - The original filenam
+ * @param fileHash - The hash of the file's content as provided by {@link hashFileContent}
+ * @param hashLength - The length of the hash to append to the filename as
+ *                     determined by {@link BusterConfig}
+ * @retval - A Promise, resolving to the new filename
+ */
+function determineNewFilename(
+  filename: string,
+  fileHash: string,
+  hashLength: number
+): Promise<string> {
+  return new Promise((resolve) => {
+    const filePath = dirname(filename);
+    const fileExtension = extname(filename);
+    const fileBasename = basename(filename, fileExtension);
+
+    const newFilename = join(
+      filePath,
+      `${fileBasename}.${fileHash.substring(0, hashLength)}${fileExtension}`
+    );
+
+    return resolve(newFilename);
+  });
 }
 
 /**
@@ -143,7 +171,10 @@ export function hashWalker(
                 filterByExtension(file, config.extensions)
                   .then(hashFileContent)
                   .then((hash) => {
-                    logger.debug(`${file}: ${hash}`);
+                    return determineNewFilename(file, hash, config.hashLength);
+                  })
+                  .then((newFilename) => {
+                    logger.debug(newFilename);
                   })
                   .catch((err) => {
                     if (!(err instanceof BusterHashWalkerFilterError))
