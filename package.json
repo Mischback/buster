@@ -1,0 +1,41 @@
+{
+  "devDependencies": {
+    "@types/jest": "^27.0.2",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
+    "clean-publish": "^3.4.2",
+    "eslint": "^8.0.1",
+    "eslint-config-prettier": "^8.3.0",
+    "jest": "^27.2.5",
+    "lint-staged": "^11.2.3",
+    "prettier": "^2.4.1",
+    "simple-git-hooks": "^2.6.1",
+    "ts-jest": "^27.0.7",
+    "typescript": "^4.4.4"
+  },
+  "clean-publish": {
+    "files": [
+      ".github",
+      ".make-stamps",
+      ".vscode",
+      "dist/.gitignore",
+      "docs",
+      "src",
+      ".editorconfig",
+      ".eslintrc.json",
+      ".gitignore",
+      ".imprc.json",
+      ".jestrc.ci.json",
+      ".jestrc.json",
+      ".lintstagedrc.json",
+      ".nvmrc",
+      ".prettierignore",
+      ".simple-git-hooks.json",
+      "Makefile",
+      "package-lock.json",
+      "tsconfig.json",
+      "tsconfig.build.json"
+    ],
+    "packageManager": "npm"
+  }
+}
