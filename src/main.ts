@@ -8,7 +8,7 @@ import {
   cmdLineOptions,
   getConfig,
 } from "./lib/configure";
-import { hashWalker } from "./lib/hashwalker";
+import { hashWalker } from "./lib/hashwalker/hashwalker";
 import {
   applyDebugConfiguration,
   logger,

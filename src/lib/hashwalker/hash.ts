@@ -5,7 +5,7 @@ import { createHash } from "crypto";
 import { createReadStream } from "fs";
 
 /* internal imports */
-import { BusterError } from "./errors";
+import { BusterError } from "../errors";
 
 export class BusterHashError extends BusterError {
   constructor(message: string) {

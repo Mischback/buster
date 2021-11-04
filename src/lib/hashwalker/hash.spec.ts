@@ -13,7 +13,7 @@ import { BusterHashError, hashFileContent } from "./hash";
 /* additional imports */
 import { createHash } from "crypto";
 import { createReadStream } from "fs";
-import { logger } from "./logging";
+import { logger } from "../logging";
 import { PassThrough } from "stream";
 
 /* Run these before actually starting the test suite */

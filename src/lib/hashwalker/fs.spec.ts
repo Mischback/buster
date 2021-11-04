@@ -11,8 +11,8 @@ import { BusterFileSystemError, createHashedFile } from "./fs";
 
 /* additional imports */
 import { copyFile, rename } from "fs/promises";
-import { logger } from "./logging";
-import { BusterConfigMode, MODE_COPY, MODE_RENAME } from "./configure";
+import { logger } from "../logging";
+import { BusterConfigMode, MODE_COPY, MODE_RENAME } from "../configure";
 
 /* Run these before actually starting the test suite */
 beforeAll(() => {

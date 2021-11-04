@@ -4,9 +4,9 @@
 import { copyFile as fscopyFile, rename } from "fs/promises";
 
 /* internal imports */
-import { BusterConfigMode, MODE_COPY, MODE_RENAME } from "./configure";
-import { BusterError } from "./errors";
-import { logger } from "./logging";
+import { BusterConfigMode, MODE_COPY, MODE_RENAME } from "../configure";
+import { BusterError } from "../errors";
+import { logger } from "../logging";
 
 export class BusterFileSystemError extends BusterError {
   constructor(message: string) {

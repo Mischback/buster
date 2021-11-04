@@ -14,8 +14,8 @@ import { BusterHashWalkerError, hashWalker } from "./hashwalker";
 import { Stats } from "fs";
 import { readdir, stat } from "fs/promises";
 import { resolve, extname } from "path";
-import { logger } from "./logging";
-import { BusterConfig } from "./configure";
+import { logger } from "../logging";
+import { BusterConfig } from "../configure";
 
 /* Run these before actually starting the test suite */
 beforeAll(() => {

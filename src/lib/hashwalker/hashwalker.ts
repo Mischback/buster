@@ -12,11 +12,11 @@ import {
 } from "path";
 
 /* internal imports */
-import { BusterConfig } from "./configure";
-import { BusterError } from "./errors";
+import { BusterConfig } from "../configure";
+import { BusterError } from "../errors";
 import { createHashedFile } from "./fs";
 import { hashFileContent } from "./hash";
-import { logger } from "./logging";
+import { logger } from "../logging";
 
 export interface HashWalkerResult {
   [index: string]: string;
