@@ -220,7 +220,8 @@ export function hashWalker(
    */
   if (commonPathLength === -1) {
     // FIXME: Does this work?!
-    pathresolve(config.rootDirectory).length -
+    commonPathLength =
+      pathresolve(config.rootDirectory).length -
       config.rootDirectory.length +
       dirname(config.rootDirectory).length;
   }
@@ -270,7 +271,8 @@ export function hashWalker(
                     return createHashedFile(file, newFilename, config.mode);
                   })
                   .then((newFilename) => {
-                    logger.debug(`"${file}" => "${newFilename}"`);
+                    results[file.substring(commonPathLength)] =
+                      newFilename.substring(commonPathLength);
                   })
                   .catch((err) => {
                     if (!(err instanceof BusterHashWalkerFilterError))
