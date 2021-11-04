@@ -5,12 +5,14 @@ import { beforeAll, describe, expect, it, jest } from "@jest/globals";
 
 /* mock library imports */
 jest.mock("fs/promises");
+jest.mock("path");
 
 /* import the subject under test (SUT) */
 import { BusterHashWalkerError, hashWalker } from "./hashwalker";
 
 /* additional imports */
-import { readdir } from "fs/promises";
+import { readdir, stat } from "fs/promises";
+import { resolve } from "path";
 import { logger } from "./logging";
 import { BusterConfig } from "./configure";
 
@@ -60,5 +62,70 @@ describe("hashWalker()...", () => {
 
   // it("...rejects if readdir() fails on a subdirectory", () => {});
 
-  // it("...rejects if stat() fails on a given file system item", () => {});
+  it("...resolves immediatly, if a directory is actually empty", () => {
+    /* define the parameter */
+    const testExtensions = ["js"];
+    const testHashLength = 10;
+    const testMode = "copy";
+    const testOutFile = "testmanifest.json";
+    const testRootDir = "./testing";
+    const testConfig: BusterConfig = {
+      extensions: testExtensions,
+      hashLength: testHashLength,
+      mode: testMode,
+      outFile: testOutFile,
+      rootDirectory: testRootDir,
+    };
+    const testReaddirResolve: string[] = [];
+
+    /* setup mocks and spies */
+    (readdir as jest.Mock).mockResolvedValue(testReaddirResolve);
+    // const loggerDebugSpy = jest.spyOn(logger, "debug");
+
+    /* make the assertions */
+    return hashWalker(testConfig)
+      .then((retVal) => {
+        expect(retVal).toStrictEqual({});
+      })
+      .catch((err) => {
+        // This should not be reached, but make sure to FAIL the test
+        console.log(err);
+        expect(1).toBe(2);
+      });
+  });
+
+  it("...rejects if stat() fails on a given file system item", () => {
+    /* define the parameter */
+    const testRejection = "foobar";
+    const testExtensions = ["js"];
+    const testHashLength = 10;
+    const testMode = "copy";
+    const testOutFile = "testmanifest.json";
+    const testRootDir = "./testing";
+    const testConfig: BusterConfig = {
+      extensions: testExtensions,
+      hashLength: testHashLength,
+      mode: testMode,
+      outFile: testOutFile,
+      rootDirectory: testRootDir,
+    };
+    const testReaddirResolve: string[] = ["testfile1", "testfile2"];
+
+    /* setup mocks and spies */
+    (readdir as jest.Mock).mockResolvedValue(testReaddirResolve);
+    (resolve as jest.Mock).mockReturnValue("testfile");
+    (stat as jest.Mock).mockRejectedValue(testRejection);
+    const loggerDebugSpy = jest.spyOn(logger, "debug");
+
+    /* make the assertions */
+    return hashWalker(testConfig)
+      .then(() => {
+        // This should not be reached, but make sure to FAIL the test
+        expect(1).toBe(2);
+      })
+      .catch((err) => {
+        expect(err).toBeInstanceOf(BusterHashWalkerError);
+        expect(loggerDebugSpy).toHaveBeenCalledWith(testRejection);
+      });
+  });
 });
