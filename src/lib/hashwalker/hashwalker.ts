@@ -14,21 +14,16 @@ import {
 /* internal imports */
 import { BusterConfig } from "../configure";
 import { BusterError } from "../errors";
+import { logger } from "../logging";
+import { BusterExtensionFilterError, filterByExtension } from "./filter";
 import { createHashedFile } from "./fs";
 import { hashFileContent } from "./hash";
-import { logger } from "../logging";
 
 export interface HashWalkerResult {
   [index: string]: string;
 }
 
 export class BusterHashWalkerError extends BusterError {
-  constructor(message: string) {
-    super(message);
-  }
-}
-
-class BusterHashWalkerFilterError extends BusterHashWalkerError {
   constructor(message: string) {
     super(message);
   }
@@ -59,32 +54,6 @@ function determineNewFilename(
     );
 
     return resolve(newFilename);
-  });
-}
-
-/**
- * Match a given filename against a list of extensions
- *
- * @param filename - Reference to a file, provided as string
- * @param extensions - A list of extensions, derived from {@link BusterConfig}
- * @returns - A Promise, resolving to a filename (as string) that matches the
- *            list of extensions
- */
-function filterByExtension(
-  filename: string,
-  extensions: string[]
-): Promise<string> {
-  return new Promise((resolve, reject) => {
-    /* determine the file extension */
-    const fileExtension = extname(filename).substring(1);
-
-    if (extensions.includes(fileExtension)) return resolve(filename);
-
-    return reject(
-      new BusterHashWalkerFilterError(
-        `${filename}: extension "${fileExtension}" not in extensions`
-      )
-    );
   });
 }
 
@@ -163,7 +132,7 @@ export function hashWalker(
                       newFilename.substring(commonPathLength);
                   })
                   .catch((err) => {
-                    if (!(err instanceof BusterHashWalkerFilterError))
+                    if (!(err instanceof BusterExtensionFilterError))
                       return reject(err);
                   })
                   .finally(() => {
