@@ -4,7 +4,7 @@
 import { copyFile as fscopyFile, rename } from "fs/promises";
 
 /* internal imports */
-import { MODE_COPY, MODE_RENAME } from "./configure";
+import { BusterConfigMode, MODE_COPY, MODE_RENAME } from "./configure";
 import { BusterError } from "./errors";
 import { logger } from "./logging";
 
@@ -82,7 +82,7 @@ function renameFile(source: string, destination: string): Promise<string> {
 export function createHashedFile(
   source: string,
   destination: string,
-  mode: string
+  mode: BusterConfigMode
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     let fileFunc;
