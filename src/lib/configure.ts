@@ -106,9 +106,8 @@ export class BusterConfigError extends BusterError {
  */
 export function checkConfig(config: BusterConfig): Promise<BusterConfig> {
   return new Promise((resolve, reject) => {
-    const normalizedRootDir = normalize(pathresolve(config.rootDirectory));
-
     /* Verify that the root directory can be read and written to */
+    const normalizedRootDir = normalize(pathresolve(config.rootDirectory));
     try {
       accessSync(normalizedRootDir, R_OK | W_OK);
     } catch (err) {

@@ -4,7 +4,14 @@
 import { createHash } from "crypto";
 import { createReadStream } from "fs";
 import { copyFile as fscopyFile, readdir, rename, stat } from "fs/promises";
-import { basename, dirname, extname, join, resolve as pathresolve } from "path";
+import {
+  basename,
+  dirname,
+  extname,
+  join,
+  resolve as pathresolve,
+  sep as pathOsSeparator,
+} from "path";
 
 /* internal imports */
 import { BusterConfig, MODE_COPY, MODE_RENAME } from "./configure";
@@ -219,11 +226,12 @@ export function hashWalker(
    * tuples should provide relative paths again.
    */
   if (commonPathLength === -1) {
-    // FIXME: Does this work?!
-    commonPathLength =
-      pathresolve(config.rootDirectory).length -
-      config.rootDirectory.length +
-      dirname(config.rootDirectory).length;
+    /* - config.rootDirectory is already an absolute path (without trailing
+     *   slash) -> see "conifgure/checkConfig()"
+     * - the path separator is OS specific (though ususally its length should
+     *   equal 1) and must be compensated for
+     */
+    commonPathLength = config.rootDirectory.length + pathOsSeparator.length;
   }
 
   return new Promise((resolve, reject) => {
@@ -233,7 +241,6 @@ export function hashWalker(
          * resolve with the current result
          */
         let pending: number = fileList.length;
-        // if (!pending) was original code!
         if (pending === 0) return resolve(results);
 
         /* process items in fileList */
@@ -254,7 +261,6 @@ export function hashWalker(
                   (recResult) => {
                     /* merge existing results with results from recursive call */
                     results = Object.assign(results, recResult);
-                    // if (!--pending) was original code!
                     if (--pending === 0) return resolve(results);
                   },
                   (err) => {
