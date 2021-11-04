@@ -14,6 +14,7 @@ import { hashFileContent } from "./hash";
 import { createHash } from "crypto";
 import { createReadStream } from "fs";
 import { logger } from "./logging";
+import { PassThrough } from "stream";
 
 /* Run these before actually starting the test suite */
 beforeAll(() => {
@@ -73,6 +74,36 @@ describe("hashFileContent()...", () => {
       })
       .catch((err) => {
         expect(err).toBeInstanceOf(TestError);
+      });
+  });
+
+  it("...successfully returns a hash for a given file content", () => {
+    /* define the parameter */
+    const testFile = "file.ext";
+    const testHashDigest = "raboof";
+
+    /* setup mocks and spies */
+    const mockReadStream = new PassThrough();
+    mockReadStream.end("foobar");
+    const mockHashDigest = jest.fn().mockReturnValue(testHashDigest);
+    const mockHashUpdate = jest.fn();
+    (createHash as jest.Mock).mockReturnValue({
+      digest: mockHashDigest,
+      update: mockHashUpdate,
+    });
+    (createReadStream as jest.Mock).mockReturnValue(mockReadStream);
+
+    /* make the assertions */
+    return hashFileContent(testFile)
+      .then((retVal) => {
+        expect(retVal).toBe(testHashDigest);
+        expect(mockHashUpdate).toHaveBeenCalled();
+        expect(mockHashDigest).toHaveBeenCalledTimes(1);
+      })
+      .catch((err) => {
+        // should not be reached; FAIL HARD!
+        console.log(err);
+        expect(1).toBe(2);
       });
   });
 });
