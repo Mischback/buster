@@ -61,7 +61,7 @@ describe("hashWalker()...", () => {
       });
   });
 
-  it("...rejects if readdir() fails on a subdirectory", () => {
+  it("...rejects if readdir() fails on a subdirectory (recursive call)", () => {
     /* define the parameter */
     const testRejection = "foobar";
     const testExtensions = ["js"];
@@ -119,7 +119,6 @@ describe("hashWalker()...", () => {
 
     /* setup mocks and spies */
     (readdir as jest.Mock).mockResolvedValue(testReaddirResolve);
-    // const loggerDebugSpy = jest.spyOn(logger, "debug");
 
     /* make the assertions */
     return hashWalker(testConfig)
@@ -165,6 +164,46 @@ describe("hashWalker()...", () => {
       .catch((err) => {
         expect(err).toBeInstanceOf(BusterHashWalkerError);
         expect(loggerDebugSpy).toHaveBeenCalledWith(testRejection);
+      });
+  });
+
+  it("...resolves from a recursive call", () => {
+    /* define the parameter */
+    const testExtensions = ["js"];
+    const testHashLength = 10;
+    const testMode = "copy";
+    const testOutFile = "testmanifest.json";
+    const testRootDir = "./testing";
+    const testConfig: BusterConfig = {
+      extensions: testExtensions,
+      hashLength: testHashLength,
+      mode: testMode,
+      outFile: testOutFile,
+      rootDirectory: testRootDir,
+    };
+    const testReaddirResolve_1: string[] = ["testdir_1"];
+    const testReaddirResolve_2: string[] = [];
+    const testStatObject = new Stats();
+    testStatObject.isDirectory = () => {
+      return true;
+    };
+
+    /* setup mocks and spies */
+    (readdir as jest.Mock).mockResolvedValue(testReaddirResolve_2);
+    (readdir as jest.Mock).mockResolvedValueOnce(testReaddirResolve_1);
+    (resolve as jest.Mock).mockReturnValue("testfile");
+    (stat as jest.Mock).mockResolvedValue(testStatObject);
+    // const loggerDebugSpy = jest.spyOn(logger, "debug");
+
+    /* make the assertions */
+    return hashWalker(testConfig)
+      .then((retVal) => {
+        expect(retVal).toStrictEqual({});
+      })
+      .catch((err) => {
+        // This should not be reached, but make sure to FAIL the test
+        console.log(err);
+        expect(1).toBe(2);
       });
   });
 });
