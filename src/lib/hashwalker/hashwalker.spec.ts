@@ -13,7 +13,7 @@ import { BusterHashWalkerError, hashWalker } from "./hashwalker";
 /* additional imports */
 import { Stats } from "fs";
 import { readdir, stat } from "fs/promises";
-import { resolve, extname } from "path";
+import { resolve } from "path";
 import { logger } from "../logging";
 import { BusterConfig } from "../configure";
 
@@ -194,46 +194,6 @@ describe("hashWalker()...", () => {
     (resolve as jest.Mock).mockReturnValue("testfile");
     (stat as jest.Mock).mockResolvedValue(testStatObject);
     // const loggerDebugSpy = jest.spyOn(logger, "debug");
-
-    /* make the assertions */
-    return hashWalker(testConfig)
-      .then((retVal) => {
-        expect(retVal).toStrictEqual({});
-      })
-      .catch((err) => {
-        // This should not be reached, but make sure to FAIL the test
-        console.log(err);
-        expect(1).toBe(2);
-      });
-  });
-
-  it("...uses filterByExtension() and correctly returns empty result if the only file does not match", () => {
-    /* define the parameter */
-    const testRejection = "foobar";
-    const testExtensions = ["js"];
-    const testHashLength = 10;
-    const testMode = "copy";
-    const testOutFile = "testmanifest.json";
-    const testRootDir = "./testing";
-    const testConfig: BusterConfig = {
-      extensions: testExtensions,
-      hashLength: testHashLength,
-      mode: testMode,
-      outFile: testOutFile,
-      rootDirectory: testRootDir,
-    };
-    const testReaddirResolve: string[] = ["testfile1"];
-    const testStatObject = new Stats();
-    testStatObject.isDirectory = () => {
-      return false;
-    };
-
-    /* setup mocks and spies */
-    (readdir as jest.Mock).mockRejectedValue(testRejection);
-    (readdir as jest.Mock).mockResolvedValueOnce(testReaddirResolve);
-    (resolve as jest.Mock).mockReturnValue("testfile.unknown");
-    (extname as jest.Mock).mockReturnValue(".unknown");
-    (stat as jest.Mock).mockResolvedValue(testStatObject);
 
     /* make the assertions */
     return hashWalker(testConfig)
