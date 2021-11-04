@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 
 /* library imports */
-import { createHash } from "crypto";
-import { createReadStream } from "fs";
 import { readdir, stat } from "fs/promises";
 import {
   basename,
@@ -17,6 +15,7 @@ import {
 import { BusterConfig } from "./configure";
 import { BusterError } from "./errors";
 import { createHashedFile } from "./fs";
+import { hashFileContent } from "./hash";
 import { logger } from "./logging";
 
 export interface HashWalkerResult {
@@ -86,31 +85,6 @@ function filterByExtension(
         `${filename}: extension "${fileExtension}" not in extensions`
       )
     );
-  });
-}
-
-/**
- * Calculate the hash of a file's content
- *
- * @param filename - Reference to a file, provided as string
- * @returns - A Promise, resolving to the hash of the file's content
- */
-function hashFileContent(filename: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const hash = createHash("md5");
-    const stream = createReadStream(filename);
-
-    stream.on("error", () => {
-      return reject(new BusterHashWalkerError("Error during hash calculation"));
-    });
-
-    stream.on("end", () => {
-      return resolve(hash.digest("hex"));
-    });
-
-    stream.on("data", (chunk) => {
-      hash.update(chunk);
-    });
   });
 }
 
