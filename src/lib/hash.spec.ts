@@ -8,7 +8,7 @@ jest.mock("crypto");
 jest.mock("fs");
 
 /* import the subject under test (SUT) */
-import { hashFileContent } from "./hash";
+import { BusterHashError, hashFileContent } from "./hash";
 
 /* additional imports */
 import { createHash } from "crypto";
@@ -105,5 +105,27 @@ describe("hashFileContent()...", () => {
         console.log(err);
         expect(1).toBe(2);
       });
+  });
+
+  it("...rejects with BusterHashError if it errors during operation", async () => {
+    /* define the parameter */
+    const testFile = "file.ext";
+
+    /* setup mocks and spies */
+    const mockReadStream = new PassThrough();
+    mockReadStream.end();
+    const mockHashDigest = jest.fn();
+    const mockHashUpdate = jest.fn();
+    (createHash as jest.Mock).mockReturnValue({
+      digest: mockHashDigest,
+      update: mockHashUpdate,
+    });
+    (createReadStream as jest.Mock).mockReturnValue(mockReadStream);
+
+    /* make the assertions */
+    const actualPromise = hashFileContent(testFile);
+    mockReadStream.emit("error", "new TestError()");
+
+    await expect(actualPromise).rejects.toBeInstanceOf(BusterHashError);
   });
 });
