@@ -57,7 +57,7 @@ function determineNewFilename(
   });
 }
 
-function payload(
+function fileObjectHandler(
   file: string,
   config: BusterConfig,
   commonPathLength: number
@@ -71,6 +71,7 @@ function payload(
            */
           hashWalker(
             Object.assign(config, { rootDirectory: file }),
+            fileObjectHandler,
             commonPathLength
           ).then(
             (recResult) => {
@@ -119,6 +120,7 @@ function payload(
  */
 export function hashWalker(
   config: BusterConfig,
+  payload = fileObjectHandler,
   commonPathLength = -1
 ): Promise<HashWalkerResult> {
   let results: HashWalkerResult = {};
