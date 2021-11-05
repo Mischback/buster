@@ -143,20 +143,40 @@ export function hashWalker(
             .catch((err) => {
               logger.debug(err);
               return reject(
-                new BusterHashWalkerError(
-                  `Error while using "stat" on "${file}"`
-                )
+                new BusterHashWalkerError(`Could not stat() "${file}"`)
               );
             });
         });
       })
-      .catch((err) => {
-        logger.debug(err);
-        return reject(
-          new BusterHashWalkerError(
-            `Error while reading directory "${config.rootDirectory}"`
-          )
-        );
+      .catch((err: NodeJS.ErrnoException) => {
+        if (err.code === "ENOTDIR") {
+          const file: string = err.path as string;
+          stat(file)
+            .then((statObject) => {
+              if (statObject.isFile() === true) {
+                logger.warn(`hashWalker() was called with a file: "${file}"`);
+              } else {
+                return reject(
+                  new BusterHashWalkerError(
+                    "rootDirectory must be a directory or a file!"
+                  )
+                );
+              }
+            })
+            .catch((err) => {
+              logger.debug(err);
+              return reject(
+                new BusterHashWalkerError(`Could not stat() "${file}"`)
+              );
+            });
+        } else {
+          logger.debug(err);
+          return reject(
+            new BusterHashWalkerError(
+              `Error while reading directory "${config.rootDirectory}"`
+            )
+          );
+        }
       });
   });
 }
