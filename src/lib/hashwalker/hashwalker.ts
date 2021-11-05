@@ -57,54 +57,56 @@ function determineNewFilename(
   });
 }
 
-function payload(file: string, config: BusterConfig, commonPathLength = -1) {
+function payload(
+  file: string,
+  config: BusterConfig,
+  commonPathLength: number
+): Promise<HashWalkerResult> {
   return new Promise((resolve, reject) => {
-  stat(file)
-  .then((statObject) => {
-    if (statObject.isDirectory() === true) {
-      /* The current item is a directory itsself. Use recursion to
-       * handle this!
-       */
-      hashWalker(
-        Object.assign(config, { rootDirectory: file }),
-        commonPathLength
-      ).then(
-        (recResult) => {
-          return resolve(recResult);
-        },
-        (err) => {
-          return reject(err);
+    stat(file)
+      .then((statObject) => {
+        if (statObject.isDirectory() === true) {
+          /* The current item is a directory itsself. Use recursion to
+           * handle this!
+           */
+          hashWalker(
+            Object.assign(config, { rootDirectory: file }),
+            commonPathLength
+          ).then(
+            (recResult) => {
+              return resolve(recResult);
+            },
+            (err) => {
+              return reject(err);
+            }
+          );
+        } else {
+          filterByExtension(file, config.extensions)
+            .then(hashFileContent)
+            .then((hash) => {
+              return determineNewFilename(file, hash, config.hashLength);
+            })
+            .then((newFilename) => {
+              return createHashedFile(file, newFilename, config.mode);
+            })
+            .then((newFilename) => {
+              //FIXME: directly resolve without temp variables!
+              const results: HashWalkerResult = {};
+              results[file.substring(commonPathLength)] =
+                newFilename.substring(commonPathLength);
+              return resolve(results);
+            })
+            .catch((err) => {
+              if (!(err instanceof BusterExtensionFilterError))
+                return reject(err);
+            });
         }
-      );
-    } else {
-      filterByExtension(file, config.extensions)
-        .then(hashFileContent)
-        .then((hash) => {
-          return determineNewFilename(file, hash, config.hashLength);
-        })
-        .then((newFilename) => {
-          return createHashedFile(file, newFilename, config.mode);
-        })
-        .then((newFilename) => {
-          //FIXME: directly resolve without temp variables!
-          const results: HashWalkerResult = {};
-          results[file.substring(commonPathLength)] =
-            newFilename.substring(commonPathLength);
-          return resolve(results);
-        })
-        .catch((err) => {
-          if (!(err instanceof BusterExtensionFilterError))
-            return reject(err);
-        });
-    }
-  })
-  .catch((err) => {
-    logger.debug(err);
-    return reject(
-      new BusterHashWalkerError(`Could not stat() "${file}"`)
-    );
+      })
+      .catch((err) => {
+        logger.debug(err);
+        return reject(new BusterHashWalkerError(`Could not stat() "${file}"`));
+      });
   });
-});
 }
 
 /**
@@ -156,29 +158,19 @@ export function hashWalker(
             })
             .catch((err) => {
               return reject(err);
-            })
+            });
         });
       })
       .catch((err: NodeJS.ErrnoException) => {
         if (err.code === "ENOTDIR") {
           const file: string = err.path as string;
-          stat(file)
-            .then((statObject) => {
-              if (statObject.isFile() === true) {
-                logger.warn(`hashWalker() was called with a file: "${file}"`);
-              } else {
-                return reject(
-                  new BusterHashWalkerError(
-                    "rootDirectory must be a directory or a file!"
-                  )
-                );
-              }
+          // FIXME: commonPathLength has to be adjusted!
+          payload(file, config, commonPathLength)
+            .then((results) => {
+              return resolve(results);
             })
             .catch((err) => {
-              logger.debug(err);
-              return reject(
-                new BusterHashWalkerError(`Could not stat() "${file}"`)
-              );
+              return reject(err);
             });
         } else {
           logger.debug(err);
