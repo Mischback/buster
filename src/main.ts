@@ -8,7 +8,7 @@ import {
   cmdLineOptions,
   getConfig,
 } from "./lib/configure";
-import { hashWalker } from "./lib/hashwalker/hashwalker";
+import { BusterHashWalkerError, hashWalker } from "./lib/hashwalker/hashwalker";
 import {
   applyDebugConfiguration,
   logger,
@@ -17,8 +17,9 @@ import {
 
 /* *** INTERNAL CONSTANTS *** */
 const EXIT_SUCCESS = 0; // sysexits.h: 0 -> successful termination
+const EXIT_PROCESSING_ERROR = 10;
 // const EXIT_DATA_ERROR = 65; // sysexits.h: 65 -> input data was incorrect in some way
-// const EXIT_INTERNAL_ERROR = 70; // sysexits.h: 70 -> internal software error
+const EXIT_INTERNAL_ERROR = 70; // sysexits.h: 70 -> internal software error
 const EXIT_CONFIG_ERROR = 78; // sysexits.h: 78 -> configuration error
 const EXIT_SIGINT = 130; // bash scripting guide: 130 -> terminated by ctrl-c
 
@@ -72,6 +73,16 @@ export function busterMain(argv: string[]): Promise<number> {
           logger.fatal("Could not determine configuration for buster!");
           return reject(EXIT_CONFIG_ERROR);
         }
+
+        if (err instanceof BusterHashWalkerError) {
+          logger.error(err.message);
+          logger.fatal("Error during processing!");
+          return reject(EXIT_PROCESSING_ERROR);
+        }
+
+        logger.error(err);
+        logger.fatal("This was unexpected! Aborting!");
+        return reject(EXIT_INTERNAL_ERROR);
       });
   });
 }
