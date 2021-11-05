@@ -57,6 +57,56 @@ function determineNewFilename(
   });
 }
 
+function payload(file: string, config: BusterConfig, commonPathLength = -1) {
+  return new Promise((resolve, reject) => {
+  stat(file)
+  .then((statObject) => {
+    if (statObject.isDirectory() === true) {
+      /* The current item is a directory itsself. Use recursion to
+       * handle this!
+       */
+      hashWalker(
+        Object.assign(config, { rootDirectory: file }),
+        commonPathLength
+      ).then(
+        (recResult) => {
+          return resolve(recResult);
+        },
+        (err) => {
+          return reject(err);
+        }
+      );
+    } else {
+      filterByExtension(file, config.extensions)
+        .then(hashFileContent)
+        .then((hash) => {
+          return determineNewFilename(file, hash, config.hashLength);
+        })
+        .then((newFilename) => {
+          return createHashedFile(file, newFilename, config.mode);
+        })
+        .then((newFilename) => {
+          //FIXME: directly resolve without temp variables!
+          const results: HashWalkerResult = {};
+          results[file.substring(commonPathLength)] =
+            newFilename.substring(commonPathLength);
+          return resolve(results);
+        })
+        .catch((err) => {
+          if (!(err instanceof BusterExtensionFilterError))
+            return reject(err);
+        });
+    }
+  })
+  .catch((err) => {
+    logger.debug(err);
+    return reject(
+      new BusterHashWalkerError(`Could not stat() "${file}"`)
+    );
+  });
+});
+}
+
 /**
  * The actual file system walker to process the files
  *
@@ -99,53 +149,14 @@ export function hashWalker(
           /* make the file path absolute */
           file = pathresolve(config.rootDirectory, file);
 
-          stat(file)
-            .then((statObject) => {
-              if (statObject.isDirectory() === true) {
-                /* The current item is a directory itsself. Use recursion to
-                 * handle this!
-                 */
-                hashWalker(
-                  Object.assign(config, { rootDirectory: file }),
-                  commonPathLength
-                ).then(
-                  (recResult) => {
-                    /* merge existing results with results from recursive call */
-                    results = Object.assign(results, recResult);
-                    if (--pending === 0) return resolve(results);
-                  },
-                  (err) => {
-                    return reject(err);
-                  }
-                );
-              } else {
-                filterByExtension(file, config.extensions)
-                  .then(hashFileContent)
-                  .then((hash) => {
-                    return determineNewFilename(file, hash, config.hashLength);
-                  })
-                  .then((newFilename) => {
-                    return createHashedFile(file, newFilename, config.mode);
-                  })
-                  .then((newFilename) => {
-                    results[file.substring(commonPathLength)] =
-                      newFilename.substring(commonPathLength);
-                  })
-                  .catch((err) => {
-                    if (!(err instanceof BusterExtensionFilterError))
-                      return reject(err);
-                  })
-                  .finally(() => {
-                    if (--pending === 0) return resolve(results);
-                  });
-              }
+          payload(file, config, commonPathLength)
+            .then((partResults) => {
+              results = Object.assign(results, partResults);
+              if (--pending === 0) return resolve(results);
             })
             .catch((err) => {
-              logger.debug(err);
-              return reject(
-                new BusterHashWalkerError(`Could not stat() "${file}"`)
-              );
-            });
+              return reject(err);
+            })
         });
       })
       .catch((err: NodeJS.ErrnoException) => {
