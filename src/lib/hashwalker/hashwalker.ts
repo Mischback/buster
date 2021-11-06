@@ -16,7 +16,10 @@ export interface HashWalkerResult {
   [index: string]: string;
 }
 
-type HashWalkerPayload = (arg1: string, arg2: BusterConfig) => Promise<string>;
+type HashWalkerPayload = (
+  arg1: string,
+  arg2: BusterConfig
+) => Promise<HashWalkerResult>;
 
 export class BusterHashWalkerError extends BusterError {
   constructor(message: string) {
@@ -34,7 +37,7 @@ export class BusterHashWalkerError extends BusterError {
 function createHashedFile(
   filename: string,
   config: BusterConfig
-): Promise<string> {
+): Promise<HashWalkerResult> {
   return new Promise((resolve, reject) => {
     filterByExtension(filename, config.extensions)
       .then(hashFileContent)
@@ -53,7 +56,11 @@ function createHashedFile(
         return createFile(filename, newFilename, config.mode);
       })
       .then((newFilename) => {
-        return resolve(newFilename);
+        return resolve({
+          [filename.substring(config.commonPathLength)]: newFilename.substring(
+            config.commonPathLength
+          ),
+        } as HashWalkerResult);
       })
       .catch((err) => {
         if (!(err instanceof BusterExtensionFilterError)) return reject(err);
@@ -74,8 +81,8 @@ function createHashedFile(
  */
 export function fileObjectWalker(
   fileObject: string,
-  config: BusterConfig,
-  payload: HashWalkerPayload
+  payload: HashWalkerPayload,
+  payloadConfig: BusterConfig
 ): Promise<HashWalkerResult> {
   return new Promise((resolve, reject) => {
     stat(fileObject)
@@ -98,7 +105,11 @@ export function fileObjectWalker(
 
               fileList.forEach((file) => {
                 /* make the file path absolute */
-                fileObjectWalker(pathresolve(fileObject, file), config, payload)
+                fileObjectWalker(
+                  pathresolve(fileObject, file),
+                  payload,
+                  payloadConfig
+                )
                   .then((recResult) => {
                     results = Object.assign(results, recResult);
                     if (--pending === 0) return resolve(results);
@@ -116,12 +127,9 @@ export function fileObjectWalker(
             });
         } else {
           /* This is the actual payload, creating the hashed files */
-          payload(fileObject, config)
-            .then((newFilename) => {
-              return resolve({
-                [fileObject.substring(config.commonPathLength)]:
-                  newFilename.substring(config.commonPathLength),
-              } as HashWalkerResult);
+          payload(fileObject, payloadConfig)
+            .then((retVal) => {
+              resolve(retVal);
             })
             .catch((err) => {
               return reject(err);
@@ -144,5 +152,5 @@ export function fileObjectWalker(
  * @returns - A Promise, resolving to a {@link HashWalkerResult}
  */
 export function hashWalker(config: BusterConfig): Promise<HashWalkerResult> {
-  return fileObjectWalker(config.input, config, createHashedFile);
+  return fileObjectWalker(config.input, createHashedFile, config);
 }
