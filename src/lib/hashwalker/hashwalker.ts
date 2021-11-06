@@ -24,6 +24,13 @@ export class BusterHashWalkerError extends BusterError {
   }
 }
 
+/**
+ * Creates a file with the hash of the file content appended to its filename
+ *
+ * @param filename - The input file, provided as string
+ * @param config - A {@link BusterConfig} instance
+ * @returns - A Promise, rsolving to the new filename
+ */
 function createHashedFile(
   filename: string,
   config: BusterConfig
@@ -57,7 +64,11 @@ function createHashedFile(
 /**
  * The actual file system walker to process the files
  *
+ * @param fileObject - A file or directory (provided as string) as starting
+ *                     point of the walker
  * @param config - A {@link BusterConfig} instance
+ * @param payload - A {@link HashWalkerPayload}, actually providing the logic
+ *                  of what is to be done
  * @returns - A Promise, resolving to a dictionary of filenames as key with
  *            their corresponding, hashed, equivalents
  */
