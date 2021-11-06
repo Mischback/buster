@@ -2,14 +2,7 @@
 
 /* library imports */
 import { readdir, stat } from "fs/promises";
-import {
-  basename,
-  dirname,
-  extname,
-  join,
-  resolve as pathresolve,
-  // sep as pathOsSeparator,
-} from "path";
+import { basename, dirname, extname, join, resolve as pathresolve } from "path";
 
 /* internal imports */
 import { BusterConfig } from "../configure";
@@ -31,34 +24,6 @@ export class BusterHashWalkerError extends BusterError {
   }
 }
 
-/**
- * Append the hash (or part of it) to the filename
- *
- * @param filename - The original filenam
- * @param fileHash - The hash of the file's content as provided by {@link hashFileContent}
- * @param hashLength - The length of the hash to append to the filename as
- *                     determined by {@link BusterConfig}
- * @retval - A Promise, resolving to the new filename
- */
-function determineNewFilename(
-  filename: string,
-  fileHash: string,
-  hashLength: number
-): Promise<string> {
-  return new Promise((resolve) => {
-    const filePath = dirname(filename);
-    const fileExtension = extname(filename);
-    const fileBasename = basename(filename, fileExtension);
-
-    const newFilename = join(
-      filePath,
-      `${fileBasename}.${fileHash.substring(0, hashLength)}${fileExtension}`
-    );
-
-    return resolve(newFilename);
-  });
-}
-
 function createHashedFile(
   filename: string,
   config: BusterConfig
@@ -67,7 +32,15 @@ function createHashedFile(
     filterByExtension(filename, config.extensions)
       .then(hashFileContent)
       .then((hash) => {
-        return determineNewFilename(filename, hash, config.hashLength);
+        return Promise.resolve(
+          join(
+            dirname(filename),
+            `${basename(filename, extname(filename))}.${hash.substring(
+              0,
+              config.hashLength
+            )}${extname(filename)}`
+          )
+        );
       })
       .then((newFilename) => {
         return createFile(filename, newFilename, config.mode);
