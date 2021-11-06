@@ -75,7 +75,7 @@ function createHashedFile(
 export function fileObjectWalker(
   fileObject: string,
   config: BusterConfig,
-  payload: HashWalkerPayload = createHashedFile
+  payload: HashWalkerPayload
 ): Promise<HashWalkerResult> {
   return new Promise((resolve, reject) => {
     stat(fileObject)
@@ -135,4 +135,14 @@ export function fileObjectWalker(
         );
       });
   });
+}
+
+/**
+ * Walk the filesystem and apply {@link createHashedFile} to the files
+ *
+ * @param config - A {@link BusterConfig} instance
+ * @returns - A Promise, resolving to a {@link HashWalkerResult}
+ */
+export function hashWalker(config: BusterConfig): Promise<HashWalkerResult> {
+  return fileObjectWalker(config.input, config, createHashedFile);
 }

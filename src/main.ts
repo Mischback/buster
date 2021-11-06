@@ -10,7 +10,7 @@ import {
 } from "./lib/configure";
 import {
   BusterHashWalkerError,
-  fileObjectWalker,
+  hashWalker,
   // hashWalker
 } from "./lib/hashwalker/hashwalker";
 import {
@@ -66,9 +66,7 @@ export function busterMain(argv: string[]): Promise<number> {
         logger.debug(config);
         return Promise.resolve(config);
       })
-      .then((config) => {
-        return fileObjectWalker(config.input, config);
-      })
+      .then(hashWalker)
       .then((result) => {
         logger.info(result);
         return resolve(EXIT_SUCCESS);
