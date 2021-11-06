@@ -1,14 +1,8 @@
 // SPDX-License-Identifier: MIT
 
 /* library imports */
-import { accessSync, constants } from "fs";
-import {
-  basename,
-  dirname,
-  join,
-  normalize,
-  resolve as pathresolve,
-} from "path";
+import { accessSync, constants, existsSync, lstatSync } from "fs";
+import { basename, dirname, normalize, resolve as pathresolve } from "path";
 import { getopt } from "stdio";
 import { Config } from "stdio/dist/getopt";
 const { R_OK, W_OK } = constants;
@@ -24,10 +18,10 @@ export const MODE_RENAME = "rename";
 
 export interface BusterConfig {
   extensions: string[];
+  input: string;
   hashLength: number;
   mode: BusterConfigMode;
   outFile: string;
-  rootDirectory: string;
 }
 
 /* Provide some default settings
@@ -44,6 +38,13 @@ const defaultOutFile = "asset-manifest.json";
  * Define the accepted command line options as required by {@link getopt}.
  */
 export const cmdLineOptions: Config = {
+  debug: {
+    args: 0,
+    default: false,
+    description: "Flag to activate debug mode",
+    key: "d",
+    required: false,
+  },
   extension: {
     args: "*",
     default: false,
@@ -53,17 +54,17 @@ export const cmdLineOptions: Config = {
     multiple: true,
     required: false,
   },
-  debug: {
-    args: 0,
-    default: false,
-    description: "Flag to activate debug mode",
-    key: "d",
-    required: false,
-  },
   hashLength: {
     args: 1,
     default: false,
     description: "The length of the hash string to append",
+    required: false,
+  },
+  input: {
+    args: 1,
+    default: false,
+    description: "The input, either a directory or a file",
+    key: "i",
     required: false,
   },
   mode: {
@@ -87,12 +88,6 @@ export const cmdLineOptions: Config = {
     key: "q",
     required: false,
   },
-  rootDirectory: {
-    args: 1,
-    default: false,
-    description: "The directory containing the files to work on",
-    required: false,
-  },
 };
 
 export class BusterConfigError extends BusterError {
@@ -106,27 +101,44 @@ export class BusterConfigError extends BusterError {
  */
 export function checkConfig(config: BusterConfig): Promise<BusterConfig> {
   return new Promise((resolve, reject) => {
-    /* Verify that the root directory can be read and written to */
-    const normalizedRootDir = normalize(pathresolve(config.rootDirectory));
+    /* Verify that the input can be read and written to */
+    const normalizedInput = normalize(pathresolve(config.input));
     try {
-      accessSync(normalizedRootDir, R_OK | W_OK);
+      accessSync(normalizedInput, R_OK | W_OK);
     } catch (err) {
       return reject(
-        new BusterConfigError(
-          "The specified root directory can not be read/written to"
-        )
+        new BusterConfigError("The specified input can not be read/written to")
       );
     }
 
-    /* Verify that the output file can be written to */
-    // FIXME: Check what the if-block actually does!
+    /* Determine the absolute path for the outfile
+     * - if just a filename is given, buster tries to place this file relative
+     *   to the input (inside input, if input is a directory or in the same
+     *   same directory as input, if input is a file)
+     * - if a path/filename is given, just make that absolute
+     */
     let normalizedOutFile = config.outFile;
-    if (normalizedOutFile === basename(normalizedOutFile))
-      normalizedOutFile = normalize(
-        pathresolve(join(normalizedRootDir, normalizedOutFile))
-      );
-    else normalizedOutFile = normalize(pathresolve(normalizedOutFile));
+    logger.warn(normalizedOutFile);
+    logger.warn(normalizedInput);
+    if (normalizedOutFile === basename(normalizedOutFile)) {
+      if (
+        existsSync(normalizedInput) &&
+        lstatSync(normalizedInput).isDirectory()
+      ) {
+        normalizedOutFile = normalize(
+          pathresolve(normalizedInput, normalizedOutFile)
+        );
+      } else {
+        normalizedOutFile = normalize(
+          pathresolve(dirname(normalizedInput), normalizedOutFile)
+        );
+      }
+      logger.warn(normalizedOutFile);
+    } else {
+      normalizedOutFile = normalize(pathresolve(normalizedOutFile));
+    }
 
+    /* Verify that the output file can be written to */
     try {
       accessSync(dirname(normalizedOutFile), R_OK | W_OK);
     } catch (err) {
@@ -140,7 +152,7 @@ export function checkConfig(config: BusterConfig): Promise<BusterConfig> {
     return resolve(
       Object.assign(
         config,
-        { rootDirectory: normalizedRootDir },
+        { input: normalizedInput },
         { outFile: normalizedOutFile }
       ) as BusterConfig
     );
@@ -154,7 +166,7 @@ export function checkConfig(config: BusterConfig): Promise<BusterConfig> {
  * @returns - A Promise, resolving to a {@link BusterConfig} instance
  *
  * The function provides sane defaults for most of the configuration options and
- * enforces the specification of "rootDirectory" parameter.
+ * enforces the specification of "input" parameter.
  *
  * {@link getopt} is kind of misused, as the defaults are checked and provided
  * here. Probably this could be improved.
@@ -168,14 +180,14 @@ export function getConfig(argv: string[]): Promise<BusterConfig> {
         new BusterConfigError("Could not parse command line parameters")
       );
 
-    /* rootDirectory is a MANDATORY parameter, so an error is raised to reject
+    /* input is a MANDATORY parameter, so an error is raised to reject
      * the Promise.
      */
-    let tmpRootDir: string;
-    if (cmdLineParams.rootDirectory === false) {
-      return reject(new BusterConfigError("Missing parameter rootDirectory"));
+    let tmpInput: string;
+    if (cmdLineParams.input === false) {
+      return reject(new BusterConfigError("Missing parameter input"));
     } else {
-      tmpRootDir = cmdLineParams.rootDirectory as string;
+      tmpInput = cmdLineParams.input as string;
     }
 
     let tmpExtensions: string[];
@@ -218,9 +230,9 @@ export function getConfig(argv: string[]): Promise<BusterConfig> {
     return resolve({
       extensions: tmpExtensions,
       hashLength: tmpHashLength,
+      input: tmpInput,
       mode: tmpMode,
       outFile: tmpOutFile,
-      rootDirectory: tmpRootDir,
     } as BusterConfig);
   });
 }
