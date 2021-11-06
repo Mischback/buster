@@ -79,7 +79,7 @@ function renameFile(source: string, destination: string): Promise<string> {
  * The actual filesystem operations are performed by {@link copyFile} and
  * {@link renameFile}.
  */
-export function createHashedFile(
+export function createFile(
   source: string,
   destination: string,
   mode: BusterConfigMode

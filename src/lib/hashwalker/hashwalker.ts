@@ -16,7 +16,7 @@ import { BusterConfig } from "../configure";
 import { BusterError } from "../errors";
 import { logger } from "../logging";
 import { BusterExtensionFilterError, filterByExtension } from "./filter";
-import { createHashedFile } from "./fs";
+import { createFile } from "./fs";
 import { hashFileContent } from "./hash";
 
 export interface HashWalkerResult {
@@ -113,7 +113,7 @@ export function fileObjectWalker(
               return determineNewFilename(fileObject, hash, config.hashLength);
             })
             .then((newFilename) => {
-              return createHashedFile(fileObject, newFilename, config.mode);
+              return createFile(fileObject, newFilename, config.mode);
             })
             .then((newFilename) => {
               //FIXME: directly resolve without temp variables!

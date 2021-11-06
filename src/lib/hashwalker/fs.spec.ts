@@ -7,7 +7,7 @@ import { beforeAll, describe, expect, it, jest } from "@jest/globals";
 jest.mock("fs/promises");
 
 /* import the subject under test (SUT) */
-import { BusterFileSystemError, createHashedFile } from "./fs";
+import { BusterFileSystemError, createFile } from "./fs";
 
 /* additional imports */
 import { copyFile, rename } from "fs/promises";
@@ -33,7 +33,7 @@ describe("createHashedFile()...", () => {
     const testMode = "foo" as BusterConfigMode;
 
     /* make the assertions */
-    return createHashedFile(testSource, testDest, testMode)
+    return createFile(testSource, testDest, testMode)
       .then((retVal) => {
         // should not be reached; FAIL HARD!
         console.log(retVal);
@@ -56,7 +56,7 @@ describe("createHashedFile()...", () => {
     const loggerDebugSpy = jest.spyOn(logger, "debug");
 
     /* make the assertions */
-    return createHashedFile(testSource, testDest, testMode)
+    return createFile(testSource, testDest, testMode)
       .then((retVal) => {
         // should not be reached; FAIL HARD!
         console.log(retVal);
@@ -81,7 +81,7 @@ describe("createHashedFile()...", () => {
     const loggerDebugSpy = jest.spyOn(logger, "debug");
 
     /* make the assertions */
-    return createHashedFile(testSource, testDest, testMode)
+    return createFile(testSource, testDest, testMode)
       .then((retVal) => {
         // should not be reached; FAIL HARD!
         console.log(retVal);
@@ -104,7 +104,7 @@ describe("createHashedFile()...", () => {
     (copyFile as jest.Mock).mockResolvedValue(undefined);
 
     /* make the assertions */
-    return createHashedFile(testSource, testDest, testMode)
+    return createFile(testSource, testDest, testMode)
       .then((retVal) => {
         expect(retVal).toBe(testDest);
       })
@@ -125,7 +125,7 @@ describe("createHashedFile()...", () => {
     (rename as jest.Mock).mockResolvedValue(undefined);
 
     /* make the assertions */
-    return createHashedFile(testSource, testDest, testMode)
+    return createFile(testSource, testDest, testMode)
       .then((retVal) => {
         expect(retVal).toBe(testDest);
       })
