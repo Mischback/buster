@@ -23,6 +23,8 @@ export interface HashWalkerResult {
   [index: string]: string;
 }
 
+type HashWalkerPayload = (arg1: string, arg2: BusterConfig) => Promise<string>;
+
 export class BusterHashWalkerError extends BusterError {
   constructor(message: string) {
     super(message);
@@ -57,6 +59,28 @@ function determineNewFilename(
   });
 }
 
+function createHashedFile(
+  filename: string,
+  config: BusterConfig
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    filterByExtension(filename, config.extensions)
+      .then(hashFileContent)
+      .then((hash) => {
+        return determineNewFilename(filename, hash, config.hashLength);
+      })
+      .then((newFilename) => {
+        return createFile(filename, newFilename, config.mode);
+      })
+      .then((newFilename) => {
+        return resolve(newFilename);
+      })
+      .catch((err) => {
+        if (!(err instanceof BusterExtensionFilterError)) return reject(err);
+      });
+  });
+}
+
 /**
  * The actual file system walker to process the files
  *
@@ -66,7 +90,8 @@ function determineNewFilename(
  */
 export function fileObjectWalker(
   fileObject: string,
-  config: BusterConfig
+  config: BusterConfig,
+  payload: HashWalkerPayload = createHashedFile
 ): Promise<HashWalkerResult> {
   return new Promise((resolve, reject) => {
     stat(fileObject)
@@ -89,7 +114,7 @@ export function fileObjectWalker(
 
               fileList.forEach((file) => {
                 /* make the file path absolute */
-                fileObjectWalker(pathresolve(fileObject, file), config)
+                fileObjectWalker(pathresolve(fileObject, file), config, payload)
                   .then((recResult) => {
                     results = Object.assign(results, recResult);
                     if (--pending === 0) return resolve(results);
@@ -107,24 +132,15 @@ export function fileObjectWalker(
             });
         } else {
           /* This is the actual payload, creating the hashed files */
-          filterByExtension(fileObject, config.extensions)
-            .then(hashFileContent)
-            .then((hash) => {
-              return determineNewFilename(fileObject, hash, config.hashLength);
-            })
+          payload(fileObject, config)
             .then((newFilename) => {
-              return createFile(fileObject, newFilename, config.mode);
-            })
-            .then((newFilename) => {
-              //FIXME: directly resolve without temp variables!
-              const results: HashWalkerResult = {};
-              results[fileObject.substring(config.commonPathLength)] =
-                newFilename.substring(config.commonPathLength);
-              return resolve(results);
+              return resolve({
+                [fileObject.substring(config.commonPathLength)]:
+                  newFilename.substring(config.commonPathLength),
+              } as HashWalkerResult);
             })
             .catch((err) => {
-              if (!(err instanceof BusterExtensionFilterError))
-                return reject(err);
+              return reject(err);
             });
         }
       })
