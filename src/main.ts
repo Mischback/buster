@@ -8,7 +8,11 @@ import {
   cmdLineOptions,
   getConfig,
 } from "./lib/configure";
-import { BusterHashWalkerError, hashWalker } from "./lib/hashwalker/hashwalker";
+import {
+  BusterHashWalkerError,
+  fileObjectWalker,
+  // hashWalker
+} from "./lib/hashwalker/hashwalker";
 import {
   applyDebugConfiguration,
   logger,
@@ -62,7 +66,9 @@ export function busterMain(argv: string[]): Promise<number> {
         logger.debug(config);
         return Promise.resolve(config);
       })
-      .then(hashWalker)
+      .then((config) => {
+        return fileObjectWalker(config.rootDirectory, config, 20);
+      })
       .then((result) => {
         logger.info(result);
         return resolve(EXIT_SUCCESS);
