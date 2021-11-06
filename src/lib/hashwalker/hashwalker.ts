@@ -61,14 +61,12 @@ function determineNewFilename(
  * The actual file system walker to process the files
  *
  * @param config - A {@link BusterConfig} instance
- * @param commonPathLength - A number, determining the common path length
  * @returns - A Promise, resolving to a dictionary of filenames as key with
  *            their corresponding, hashed, equivalents
  */
 export function fileObjectWalker(
   fileObject: string,
-  config: BusterConfig,
-  commonPathLength: number
+  config: BusterConfig
 ): Promise<HashWalkerResult> {
   return new Promise((resolve, reject) => {
     stat(fileObject)
@@ -91,11 +89,7 @@ export function fileObjectWalker(
 
               fileList.forEach((file) => {
                 /* make the file path absolute */
-                fileObjectWalker(
-                  pathresolve(fileObject, file),
-                  config,
-                  commonPathLength
-                )
+                fileObjectWalker(pathresolve(fileObject, file), config)
                   .then((recResult) => {
                     results = Object.assign(results, recResult);
                     if (--pending === 0) return resolve(results);
@@ -124,8 +118,8 @@ export function fileObjectWalker(
             .then((newFilename) => {
               //FIXME: directly resolve without temp variables!
               const results: HashWalkerResult = {};
-              results[fileObject.substring(commonPathLength)] =
-                newFilename.substring(commonPathLength);
+              results[fileObject.substring(config.commonPathLength)] =
+                newFilename.substring(config.commonPathLength);
               return resolve(results);
             })
             .catch((err) => {

@@ -67,7 +67,7 @@ export function busterMain(argv: string[]): Promise<number> {
         return Promise.resolve(config);
       })
       .then((config) => {
-        return fileObjectWalker(config.input, config, 20);
+        return fileObjectWalker(config.input, config);
       })
       .then((result) => {
         logger.info(result);

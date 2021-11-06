@@ -2,7 +2,13 @@
 
 /* library imports */
 import { accessSync, constants, existsSync, lstatSync } from "fs";
-import { basename, dirname, normalize, resolve as pathresolve } from "path";
+import {
+  basename,
+  dirname,
+  normalize,
+  resolve as pathresolve,
+  sep as pathOsSeparator,
+} from "path";
 import { getopt } from "stdio";
 import { Config } from "stdio/dist/getopt";
 const { R_OK, W_OK } = constants;
@@ -17,6 +23,7 @@ export const MODE_COPY = "copy";
 export const MODE_RENAME = "rename";
 
 export interface BusterConfig {
+  commonPathLength: number;
   extensions: string[];
   input: string;
   hashLength: number;
@@ -38,6 +45,12 @@ const defaultOutFile = "asset-manifest.json";
  * Define the accepted command line options as required by {@link getopt}.
  */
 export const cmdLineOptions: Config = {
+  commonPathLength: {
+    args: 1,
+    default: false,
+    description: "Manually override the common path length",
+    required: false,
+  },
   debug: {
     args: 0,
     default: false,
@@ -103,12 +116,20 @@ export function checkConfig(config: BusterConfig): Promise<BusterConfig> {
   return new Promise((resolve, reject) => {
     /* Verify that the input can be read and written to */
     const normalizedInput = normalize(pathresolve(config.input));
+    const inputIsDirectory =
+      existsSync(normalizedInput) && lstatSync(normalizedInput).isDirectory();
     try {
       accessSync(normalizedInput, R_OK | W_OK);
     } catch (err) {
       return reject(
         new BusterConfigError("The specified input can not be read/written to")
       );
+    }
+
+    let normalizedCommonPathLength = config.commonPathLength;
+    if (normalizedCommonPathLength === -1 && inputIsDirectory === true) {
+      normalizedCommonPathLength =
+        normalizedInput.length + pathOsSeparator.length;
     }
 
     /* Determine the absolute path for the outfile
@@ -119,10 +140,7 @@ export function checkConfig(config: BusterConfig): Promise<BusterConfig> {
      */
     let normalizedOutFile = config.outFile;
     if (normalizedOutFile === basename(normalizedOutFile)) {
-      if (
-        existsSync(normalizedInput) &&
-        lstatSync(normalizedInput).isDirectory()
-      ) {
+      if (inputIsDirectory === true) {
         normalizedOutFile = normalize(
           pathresolve(normalizedInput, normalizedOutFile)
         );
@@ -149,6 +167,7 @@ export function checkConfig(config: BusterConfig): Promise<BusterConfig> {
     return resolve(
       Object.assign(
         config,
+        { commonPathLength: normalizedCommonPathLength },
         { input: normalizedInput },
         { outFile: normalizedOutFile }
       ) as BusterConfig
@@ -185,6 +204,17 @@ export function getConfig(argv: string[]): Promise<BusterConfig> {
       return reject(new BusterConfigError("Missing parameter input"));
     } else {
       tmpInput = cmdLineParams.input as string;
+    }
+
+    /* commonPathLength is initialized with -1 if not provided.
+     * {@link checkConfig} will then determine the commonPathLength depending
+     * on "input".
+     */
+    let tmpCommonPathLength: number;
+    if (cmdLineParams.commonPathLength === false) {
+      tmpCommonPathLength = -1;
+    } else {
+      tmpCommonPathLength = cmdLineParams.commonPathLength as number;
     }
 
     let tmpExtensions: string[];
@@ -225,6 +255,7 @@ export function getConfig(argv: string[]): Promise<BusterConfig> {
     }
 
     return resolve({
+      commonPathLength: tmpCommonPathLength,
       extensions: tmpExtensions,
       hashLength: tmpHashLength,
       input: tmpInput,
