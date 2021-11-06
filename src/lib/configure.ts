@@ -118,8 +118,6 @@ export function checkConfig(config: BusterConfig): Promise<BusterConfig> {
      * - if a path/filename is given, just make that absolute
      */
     let normalizedOutFile = config.outFile;
-    logger.warn(normalizedOutFile);
-    logger.warn(normalizedInput);
     if (normalizedOutFile === basename(normalizedOutFile)) {
       if (
         existsSync(normalizedInput) &&
@@ -133,7 +131,6 @@ export function checkConfig(config: BusterConfig): Promise<BusterConfig> {
           pathresolve(dirname(normalizedInput), normalizedOutFile)
         );
       }
-      logger.warn(normalizedOutFile);
     } else {
       normalizedOutFile = normalize(pathresolve(normalizedOutFile));
     }
