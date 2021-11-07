@@ -8,11 +8,10 @@ import {
   cmdLineOptions,
   getConfig,
 } from "./lib/configure";
-import {
-  BusterHashWalkerError,
-  hashWalker,
-  // hashWalker
-} from "./lib/hashwalker/hashwalker";
+import { BusterFileSystemError } from "./lib/hashwalker/fs";
+import { BusterHashError } from "./lib/hashwalker/hash";
+import { hashWalker } from "./lib/hashwalker/hashwalker";
+import { FileObjectWalkerError } from "./lib/hashwalker/walker";
 import {
   applyDebugConfiguration,
   logger,
@@ -78,7 +77,11 @@ export function busterMain(argv: string[]): Promise<number> {
           return reject(EXIT_CONFIG_ERROR);
         }
 
-        if (err instanceof BusterHashWalkerError) {
+        if (
+          err instanceof BusterHashError ||
+          err instanceof BusterFileSystemError ||
+          err instanceof FileObjectWalkerError
+        ) {
           logger.error(err.message);
           logger.fatal("Error during processing!");
           return reject(EXIT_PROCESSING_ERROR);
