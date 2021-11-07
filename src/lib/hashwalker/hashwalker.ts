@@ -50,7 +50,9 @@ function createHashedFile(
         } as HashWalkerResult);
       })
       .catch((err) => {
-        if (!(err instanceof BusterExtensionFilterError)) return reject(err);
+        if (err instanceof BusterExtensionFilterError)
+          return resolve({} as HashWalkerResult);
+        else return reject(err);
       });
   });
 }
