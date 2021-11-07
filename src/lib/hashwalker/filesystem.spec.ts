@@ -7,7 +7,7 @@ import { beforeAll, describe, expect, it, jest } from "@jest/globals";
 jest.mock("fs/promises");
 
 /* import the subject under test (SUT) */
-import { BusterFileSystemError, createFile } from "./fs";
+import { BusterFileSystemError, createFile } from "./filesystem";
 
 /* additional imports */
 import { copyFile, rename } from "fs/promises";

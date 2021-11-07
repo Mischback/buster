@@ -8,7 +8,7 @@ import {
   cmdLineOptions,
   getConfig,
 } from "./lib/configure";
-import { BusterFileSystemError } from "./lib/hashwalker/fs";
+import { BusterFileSystemError } from "./lib/hashwalker/filesystem";
 import { BusterHashError } from "./lib/hashwalker/hash";
 import { hashWalker } from "./lib/hashwalker/hashwalker";
 import { FileObjectWalkerError } from "./lib/hashwalker/walker";

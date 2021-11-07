@@ -6,7 +6,7 @@ import { basename, dirname, extname, join } from "path";
 /* internal imports */
 import { BusterConfig } from "../configure";
 import { BusterExtensionFilterError, filterByExtension } from "./filter";
-import { createFile } from "./fs";
+import { createFile } from "./filesystem";
 import { hashFileContent } from "./hash";
 import { fileObjectWalker } from "./walker";
 
