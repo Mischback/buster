@@ -16,11 +16,6 @@ export interface HashWalkerResult {
   [index: string]: string;
 }
 
-type HashWalkerPayload = (
-  arg1: string,
-  arg2: BusterConfig
-) => Promise<HashWalkerResult>;
-
 export class BusterHashWalkerError extends BusterError {
   constructor(message: string) {
     super(message);
@@ -79,11 +74,11 @@ function createHashedFile(
  * @returns - A Promise, resolving to a dictionary of filenames as key with
  *            their corresponding, hashed, equivalents
  */
-export function fileObjectWalker(
+export function fileObjectWalker<T, U>(
   fileObject: string,
-  payload: HashWalkerPayload,
-  payloadConfig: BusterConfig
-): Promise<HashWalkerResult> {
+  payload: (filename: string, payloadConfig: U) => Promise<T>,
+  payloadConfig: U
+): Promise<T> {
   return new Promise((resolve, reject) => {
     stat(fileObject)
       .then((statObject) => {
@@ -93,7 +88,7 @@ export function fileObjectWalker(
            */
 
           /* prepare an empty result to recive recursive results */
-          let results: HashWalkerResult = {};
+          let results: T = <T>{};
 
           readdir(fileObject)
             .then((fileList) => {
