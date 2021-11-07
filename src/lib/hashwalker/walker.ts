@@ -31,7 +31,6 @@ export class FileObjectWalkerError extends Error {
  *                  for the payload {@link payloadConfig}
  * @param payloadConfig - An instance of the payload's configuration object, as
  *                        specified in {@link payload}
-
  * @returns - A Promise, resolving to an object as determined by {@link payload}'s
  *            return type.
  */
@@ -53,8 +52,8 @@ export function fileObjectWalker<T, U>(
 
           readdir(fileObject)
             .then((fileList) => {
-              /* Check if there are still files to process. If nothing more to do,
-               * resolve with the current result
+              /* Check if there are still files to process. If nothing more to
+               * do, resolve with the current result
                */
               let pending: number = fileList.length;
               if (pending === 0) return resolve(results);
