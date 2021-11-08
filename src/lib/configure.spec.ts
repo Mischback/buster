@@ -4,17 +4,23 @@
 import { beforeAll, describe, expect, it, jest } from "@jest/globals";
 
 /* mock library imports */
+jest.mock("fs");
+jest.mock("path");
 jest.mock("stdio");
 
 /* import the subject under test (SUT) */
 import {
+  BusterConfig,
   BusterConfigError,
+  checkConfig,
   getConfig,
   MODE_COPY,
   MODE_RENAME,
 } from "./configure";
 
 /* additional imports */
+import { accessSync } from "fs";
+import { normalize } from "path";
 import { getopt } from "stdio";
 import { logger } from "./logging";
 import { GetoptResponse } from "stdio/dist/getopt";
@@ -169,4 +175,40 @@ describe("getConfig()...", () => {
   });
 });
 
-// describe("checkConfig()...", () => {});
+describe("checkConfig()...", () => {
+  it("...rejects with a BusterConfigError if the input can not be read/written to", () => {
+    /* define the parameter */
+    const testCommonPathLength = 13;
+    const testExtensions = ["html"];
+    const testHashLength = 3;
+    const testInput = "test.ext";
+    const testMode = MODE_RENAME;
+    const testOutFile = "test-manifest.json";
+
+    const testConfig: BusterConfig = {
+      commonPathLength: testCommonPathLength,
+      extensions: testExtensions,
+      hashLength: testHashLength,
+      input: testInput,
+      mode: testMode,
+      outFile: testOutFile,
+    };
+
+    const testNormalizedInput = "test.txe";
+    const testRejection = "testRejection";
+
+    /* setup mocks and spies */
+    (normalize as jest.Mock).mockReturnValue(testNormalizedInput);
+    (accessSync as jest.Mock).mockImplementation(() => {
+      throw new Error(testRejection);
+    });
+
+    /* make the assertions */
+    return checkConfig(testConfig).catch((err: Error) => {
+      expect(err).toBeInstanceOf(BusterConfigError);
+      expect(err.message).toBe(
+        "The specified input can not be read/written to"
+      );
+    });
+  });
+});
