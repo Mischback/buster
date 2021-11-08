@@ -116,8 +116,6 @@ export function checkConfig(config: BusterConfig): Promise<BusterConfig> {
   return new Promise((resolve, reject) => {
     /* Verify that the input can be read and written to */
     const normalizedInput = normalize(pathresolve(config.input));
-    const inputIsDirectory =
-      existsSync(normalizedInput) && lstatSync(normalizedInput).isDirectory();
     try {
       accessSync(normalizedInput, R_OK | W_OK);
     } catch (err) {
@@ -126,6 +124,8 @@ export function checkConfig(config: BusterConfig): Promise<BusterConfig> {
       );
     }
 
+    const inputIsDirectory =
+      existsSync(normalizedInput) && lstatSync(normalizedInput).isDirectory();
     let normalizedCommonPathLength = config.commonPathLength;
     if (normalizedCommonPathLength === -1 && inputIsDirectory === true) {
       normalizedCommonPathLength =
