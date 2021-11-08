@@ -19,8 +19,8 @@ import {
 } from "./configure";
 
 /* additional imports */
-import { accessSync } from "fs";
-import { normalize } from "path";
+import { accessSync, existsSync, lstatSync } from "fs";
+import { basename, normalize } from "path";
 import { getopt } from "stdio";
 import { logger } from "./logging";
 import { GetoptResponse } from "stdio/dist/getopt";
@@ -208,6 +208,54 @@ describe("checkConfig()...", () => {
       expect(err).toBeInstanceOf(BusterConfigError);
       expect(err.message).toBe(
         "The specified input can not be read/written to"
+      );
+    });
+  });
+
+  it("...rejects with a BusterConfigError if the output can not be read/written to", () => {
+    /* define the parameter */
+    const testCommonPathLength = -1;
+    const testExtensions = ["html"];
+    const testHashLength = 3;
+    const testInput = "test.ext";
+    const testMode = MODE_RENAME;
+    const testOutFile = "test-manifest.json";
+    const testOutFileInInput = "outFileInInputDir";
+
+    const testConfig: BusterConfig = {
+      commonPathLength: testCommonPathLength,
+      extensions: testExtensions,
+      hashLength: testHashLength,
+      input: testInput,
+      mode: testMode,
+      outFile: testOutFile,
+    };
+
+    const testNormalizedInput = "test.txe";
+    const testRejection = "testRejection";
+
+    /* setup mocks and spies */
+    (normalize as jest.Mock)
+      .mockReturnValueOnce(testNormalizedInput)
+      .mockReturnValueOnce(testOutFileInInput);
+    (existsSync as jest.Mock).mockReturnValue(true);
+    (lstatSync as jest.Mock).mockReturnValue({
+      isDirectory: jest.fn().mockReturnValue(true),
+    });
+    (accessSync as jest.Mock)
+      .mockImplementationOnce(() => {
+        return undefined;
+      })
+      .mockImplementationOnce(() => {
+        throw new Error(testRejection);
+      });
+    (basename as jest.Mock).mockReturnValue(testOutFile);
+
+    /* make the assertions */
+    return checkConfig(testConfig).catch((err: Error) => {
+      expect(err).toBeInstanceOf(BusterConfigError);
+      expect(err.message).toBe(
+        "The specified output file can not be read/written to"
       );
     });
   });
