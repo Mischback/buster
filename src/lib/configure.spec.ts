@@ -20,7 +20,7 @@ import {
 
 /* additional imports */
 import { accessSync, existsSync, lstatSync } from "fs";
-import { basename, normalize } from "path";
+import { basename, normalize, sep } from "path";
 import { getopt } from "stdio";
 import { logger } from "./logging";
 import { GetoptResponse } from "stdio/dist/getopt";
@@ -252,11 +252,162 @@ describe("checkConfig()...", () => {
     (basename as jest.Mock).mockReturnValue(testOutFile);
 
     /* make the assertions */
-    return checkConfig(testConfig).catch((err: Error) => {
-      expect(err).toBeInstanceOf(BusterConfigError);
-      expect(err.message).toBe(
-        "The specified output file can not be read/written to"
-      );
+    return checkConfig(testConfig)
+      .then((retVal) => {
+        console.log(retVal);
+        expect(1).toBe(2);
+      })
+      .catch((err: Error) => {
+        expect(err).toBeInstanceOf(BusterConfigError);
+        expect(err.message).toBe(
+          "The specified output file can not be read/written to"
+        );
+        expect(normalize).toHaveBeenCalledTimes(2);
+        expect(accessSync).toHaveBeenCalledTimes(2);
+      });
+  });
+
+  it("...resolves with the expected parameters (1/3)", () => {
+    /* define the parameter */
+    const testCommonPathLength = -1;
+    const testExtensions = ["html"];
+    const testHashLength = 3;
+    const testInput = "test.ext";
+    const testMode = MODE_RENAME;
+    const testOutFile = "test-manifest.json";
+    const testOutFileInInput = "outFileInInputDir";
+
+    const testConfig: BusterConfig = {
+      commonPathLength: testCommonPathLength,
+      extensions: testExtensions,
+      hashLength: testHashLength,
+      input: testInput,
+      mode: testMode,
+      outFile: testOutFile,
+    };
+
+    const testNormalizedInput = "test.txe";
+
+    /* setup mocks and spies */
+    (normalize as jest.Mock)
+      .mockReturnValueOnce(testNormalizedInput)
+      .mockReturnValueOnce(testOutFileInInput);
+    (existsSync as jest.Mock).mockReturnValue(true);
+    (lstatSync as jest.Mock).mockReturnValue({
+      isDirectory: jest.fn().mockReturnValue(true),
     });
+    (accessSync as jest.Mock).mockImplementation(() => {
+      return undefined;
+    });
+    (basename as jest.Mock).mockReturnValue(testOutFile);
+
+    /* make the assertions */
+    return checkConfig(testConfig)
+      .then((retVal) => {
+        expect(retVal.commonPathLength).toBe(
+          testNormalizedInput.length + sep.length
+        );
+        expect(retVal.input).toBe(testNormalizedInput);
+        expect(retVal.outFile).toBe(testOutFileInInput);
+      })
+      .catch((err: Error) => {
+        console.log(err);
+        expect(1).toBe(2);
+      });
+  });
+
+  it("...resolves with the expected parameters (2/3)", () => {
+    /* define the parameter */
+    const testCommonPathLength = -1;
+    const testExtensions = ["html"];
+    const testHashLength = 3;
+    const testInput = "test.ext";
+    const testMode = MODE_RENAME;
+    const testOutFile = "test-manifest.json";
+    const testOutFileInInput = "outFileInInputDir";
+
+    const testConfig: BusterConfig = {
+      commonPathLength: testCommonPathLength,
+      extensions: testExtensions,
+      hashLength: testHashLength,
+      input: testInput,
+      mode: testMode,
+      outFile: testOutFile,
+    };
+
+    const testNormalizedInput = "test.txe";
+
+    /* setup mocks and spies */
+    (normalize as jest.Mock)
+      .mockReturnValueOnce(testNormalizedInput)
+      .mockReturnValueOnce(testOutFileInInput);
+    (existsSync as jest.Mock).mockReturnValue(true);
+    (lstatSync as jest.Mock).mockReturnValue({
+      isDirectory: jest.fn().mockReturnValue(false),
+    });
+    (accessSync as jest.Mock).mockImplementation(() => {
+      return undefined;
+    });
+    (basename as jest.Mock).mockReturnValue(testOutFile);
+
+    /* make the assertions */
+    return checkConfig(testConfig)
+      .then((retVal) => {
+        expect(retVal.commonPathLength).toBe(testCommonPathLength);
+        expect(retVal.input).toBe(testNormalizedInput);
+        expect(retVal.outFile).toBe(testOutFileInInput);
+      })
+      .catch((err: Error) => {
+        console.log(err);
+        expect(1).toBe(2);
+      });
+  });
+
+  it("...resolves with the expected parameters (3/3)", () => {
+    /* define the parameter */
+    const testCommonPathLength = -1;
+    const testExtensions = ["html"];
+    const testHashLength = 3;
+    const testInput = "test.ext";
+    const testMode = MODE_RENAME;
+    const testOutFile = "test-manifest.json";
+    const testOutFileInInput = "outFileInInputDir";
+
+    const testConfig: BusterConfig = {
+      commonPathLength: testCommonPathLength,
+      extensions: testExtensions,
+      hashLength: testHashLength,
+      input: testInput,
+      mode: testMode,
+      outFile: testOutFile,
+    };
+
+    const testNormalizedInput = "test.txe";
+    const mockedtestOutFile = "foobar";
+
+    /* setup mocks and spies */
+    (normalize as jest.Mock)
+      .mockReturnValueOnce(testNormalizedInput)
+      .mockReturnValueOnce(testOutFileInInput);
+    (existsSync as jest.Mock).mockReturnValue(true);
+    (lstatSync as jest.Mock).mockReturnValue({
+      isDirectory: jest.fn().mockReturnValue(false),
+    });
+    (accessSync as jest.Mock).mockImplementation(() => {
+      return undefined;
+    });
+    (basename as jest.Mock).mockReturnValue(mockedtestOutFile);
+
+    /* make the assertions */
+    return checkConfig(testConfig)
+      .then((retVal) => {
+        expect(retVal.commonPathLength).toBe(testCommonPathLength);
+        expect(retVal.input).toBe(testNormalizedInput);
+        expect(retVal.outFile).toBe(testOutFileInInput);
+      })
+      .catch((err: Error) => {
+        console.log(err);
+        expect(1).toBe(2);
+      });
   });
 });
