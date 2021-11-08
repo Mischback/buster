@@ -221,7 +221,7 @@ export function getConfig(argv: string[]): Promise<BusterConfig> {
     if (cmdLineParams.extension === false) {
       tmpExtensions = defaultExtensions;
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      logger.info(`No extensions specified, using ${tmpExtensions}`);
+      logger.debug(`No extensions specified, using ${tmpExtensions}`);
     } else {
       if (typeof cmdLineParams.extension === "string") {
         tmpExtensions = [cmdLineParams.extension];
@@ -233,7 +233,7 @@ export function getConfig(argv: string[]): Promise<BusterConfig> {
     let tmpHashLength: number;
     if (cmdLineParams.hashLength === false) {
       tmpHashLength = defaultHashLength;
-      logger.info(`No hash length specified, using "${tmpHashLength}"`);
+      logger.debug(`No hash length specified, using "${tmpHashLength}"`);
     } else {
       tmpHashLength = parseInt(cmdLineParams.hashLength as string);
     }

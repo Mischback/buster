@@ -7,7 +7,12 @@ import { beforeAll, describe, expect, it, jest } from "@jest/globals";
 jest.mock("stdio");
 
 /* import the subject under test (SUT) */
-import { BusterConfigError, getConfig } from "./configure";
+import {
+  BusterConfigError,
+  getConfig,
+  MODE_COPY,
+  MODE_RENAME,
+} from "./configure";
 
 /* additional imports */
 import { getopt } from "stdio";
@@ -55,6 +60,111 @@ describe("getConfig()...", () => {
       expect(getopt).toHaveBeenCalledTimes(1);
       expect(err).toBeInstanceOf(BusterConfigError);
       expect(err.message).toBe("Missing parameter input");
+    });
+  });
+
+  it("...applies default values for all parameters", () => {
+    /* define the parameter */
+    const testArgv = ["does", "not", "matter"];
+    const defaultCommonPathLength = -1;
+    const defaultExtensions = ["css", "js"];
+    const defaultHashLength = 10;
+    const testInput = "test.ext";
+    const defaultMode = MODE_COPY;
+    const defaultOutFile = "asset-manifest.json";
+
+    /* setup mocks and spies */
+    (getopt as jest.Mock).mockReturnValue({
+      commonPathLength: false,
+      extension: false,
+      hashLength: false,
+      input: testInput,
+      mode: false,
+      outFile: false,
+    } as GetoptResponse);
+    const loggerInfoSpy = jest.spyOn(logger, "info");
+    const loggerDebugSpy = jest.spyOn(logger, "debug");
+
+    /* make the assertions */
+    return getConfig(testArgv).then((retVal) => {
+      expect(retVal.commonPathLength).toBe(defaultCommonPathLength);
+      expect(retVal.extensions).toStrictEqual(defaultExtensions);
+      expect(retVal.hashLength).toBe(defaultHashLength);
+      expect(retVal.input).toBe(testInput);
+      expect(retVal.mode).toBe(defaultMode);
+      expect(retVal.outFile).toBe(defaultOutFile);
+      expect(loggerInfoSpy).toHaveBeenCalledTimes(2);
+      expect(loggerDebugSpy).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it("...applies provided values for the parameters", () => {
+    /* define the parameter */
+    const testArgv = ["does", "not", "matter"];
+    const testCommonPathLength = 13;
+    const testExtensions = ["txt", "html"];
+    const testHashLength = 3;
+    const testInput = "test.ext";
+    const testMode = MODE_RENAME;
+    const testOutFile = "test-manifest.json";
+
+    /* setup mocks and spies */
+    (getopt as jest.Mock).mockReturnValue({
+      commonPathLength: testCommonPathLength,
+      extension: testExtensions,
+      hashLength: testHashLength,
+      input: testInput,
+      mode: testMode,
+      outFile: testOutFile,
+    } as GetoptResponse);
+    const loggerInfoSpy = jest.spyOn(logger, "info");
+    const loggerDebugSpy = jest.spyOn(logger, "debug");
+
+    /* make the assertions */
+    return getConfig(testArgv).then((retVal) => {
+      expect(retVal.commonPathLength).toBe(testCommonPathLength);
+      expect(retVal.extensions).toStrictEqual(testExtensions);
+      expect(retVal.hashLength).toBe(testHashLength);
+      expect(retVal.input).toBe(testInput);
+      expect(retVal.mode).toBe(testMode);
+      expect(retVal.outFile).toBe(testOutFile);
+      expect(loggerInfoSpy).toHaveBeenCalledTimes(0);
+      expect(loggerDebugSpy).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  it("...wraps a single extension into a list", () => {
+    /* define the parameter */
+    const testArgv = ["does", "not", "matter"];
+    const testCommonPathLength = 13;
+    const testExtensions = "html";
+    const testHashLength = 3;
+    const testInput = "test.ext";
+    const testMode = MODE_RENAME;
+    const testOutFile = "test-manifest.json";
+
+    /* setup mocks and spies */
+    (getopt as jest.Mock).mockReturnValue({
+      commonPathLength: testCommonPathLength,
+      extension: testExtensions,
+      hashLength: testHashLength,
+      input: testInput,
+      mode: testMode,
+      outFile: testOutFile,
+    } as GetoptResponse);
+    const loggerInfoSpy = jest.spyOn(logger, "info");
+    const loggerDebugSpy = jest.spyOn(logger, "debug");
+
+    /* make the assertions */
+    return getConfig(testArgv).then((retVal) => {
+      expect(retVal.commonPathLength).toBe(testCommonPathLength);
+      expect(retVal.extensions).toStrictEqual([testExtensions]);
+      expect(retVal.hashLength).toBe(testHashLength);
+      expect(retVal.input).toBe(testInput);
+      expect(retVal.mode).toBe(testMode);
+      expect(retVal.outFile).toBe(testOutFile);
+      expect(loggerInfoSpy).toHaveBeenCalledTimes(0);
+      expect(loggerDebugSpy).toHaveBeenCalledTimes(0);
     });
   });
 });
