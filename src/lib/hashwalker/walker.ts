@@ -34,10 +34,10 @@ export class FileObjectWalkerError extends Error {
  * @returns - A Promise, resolving to an object as determined by {@link payload}'s
  *            return type.
  */
-export function fileObjectWalker<T, U>(
+export function fileObjectWalker<T>(
   fileObject: string,
-  payload: (filename: string, payloadConfig: U) => Promise<T>,
-  payloadConfig: U
+  payload: (filename: string, ...payloadArgs: unknown[]) => Promise<T>,
+  ...payloadArgs: unknown[]
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     stat(fileObject)
@@ -63,7 +63,7 @@ export function fileObjectWalker<T, U>(
                 fileObjectWalker(
                   pathresolve(fileObject, file),
                   payload,
-                  payloadConfig
+                  ...payloadArgs
                 )
                   .then((recResult) => {
                     results = Object.assign(results, recResult);
@@ -84,7 +84,7 @@ export function fileObjectWalker<T, U>(
             });
         } else {
           /* This is the actual payload, creating the hashed files */
-          payload(fileObject, payloadConfig)
+          payload(fileObject, ...payloadArgs)
             .then((retVal) => {
               resolve(retVal);
             })
