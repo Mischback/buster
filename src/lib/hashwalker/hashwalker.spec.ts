@@ -5,22 +5,22 @@ import { beforeAll, describe, expect, it, jest } from "@jest/globals";
 
 /* mock library imports */
 jest.mock("path");
+jest.mock("@mischback/fileobject-walker");
 jest.mock("./filesystem");
 jest.mock("./filter");
 jest.mock("./hash");
-jest.mock("./walker");
 
 /* import the subject under test (SUT) */
 import { hashWalker, HashWalkerResult } from "./hashwalker";
 
 /* additional imports */
 import { join } from "path";
+import { fileObjectWalker } from "@mischback/fileobject-walker";
 import { logger } from "../logging";
 import { BusterConfig } from "../configure";
 import { BusterFileSystemError, createFile } from "./filesystem";
 import { BusterExtensionFilterError, filterByExtension } from "./filter";
 import { hashFileContent, BusterHashError } from "./hash";
-import { fileObjectWalker } from "./walker";
 
 /* Run these before actually starting the test suite */
 beforeAll(() => {

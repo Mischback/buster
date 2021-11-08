@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 import { Config } from "stdio/dist/getopt";
+import { FileObjectWalkerError } from "@mischback/fileobject-walker";
 
 import {
   BusterConfigError,
@@ -11,7 +12,6 @@ import {
 import { BusterFileSystemError } from "./lib/hashwalker/filesystem";
 import { BusterHashError } from "./lib/hashwalker/hash";
 import { hashWalker } from "./lib/hashwalker/hashwalker";
-import { FileObjectWalkerError } from "./lib/hashwalker/walker";
 import {
   applyDebugConfiguration,
   logger,
