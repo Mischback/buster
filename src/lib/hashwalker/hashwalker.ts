@@ -23,8 +23,9 @@ export interface HashWalkerResult {
  */
 function createHashedFile(
   filename: string,
-  config: BusterConfig
+  payloadConfig: unknown
 ): Promise<HashWalkerResult> {
+  const config = payloadConfig as BusterConfig;
   return new Promise((resolve, reject) => {
     filterByExtension(filename, config.extensions)
       .then(hashFileContent)
