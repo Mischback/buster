@@ -3,7 +3,7 @@
 /* library imports */
 import { readFile, writeFile } from "fs/promises";
 
-export class JSONInterfaceError extends Error {
+export class JsonInterfaceError extends Error {
   originalError: Error;
 
   constructor(message: string, err: Error) {
@@ -29,7 +29,7 @@ export function loadJsonFromFile(filename: string): Promise<unknown> {
       })
       .catch((err: Error) => {
         return reject(
-          new JSONInterfaceError(`Could not read "${filename}"`, err)
+          new JsonInterfaceError(`Could not read "${filename}"`, err)
         );
       });
   });
@@ -53,7 +53,7 @@ export function writeJsonToFile(
       })
       .catch((err: Error) => {
         return reject(
-          new JSONInterfaceError(`Could not write to file "${filename}"`, err)
+          new JsonInterfaceError(`Could not write to file "${filename}"`, err)
         );
       });
   });
