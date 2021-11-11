@@ -27,4 +27,23 @@ describe("loadJsonFromFile()...", () => {
       expect(readFile).toHaveBeenCalledWith(testFile, expect.anything());
     });
   });
+
+  it("...resolves with parsed JSON object", () => {
+    /* define the parameter */
+    const testFile = "testfile";
+    const testResult = { foo: "bar" };
+
+    /* setup mocks and spies */
+    (readFile as jest.Mock).mockResolvedValue("foo");
+    JSON.parse = jest.fn().mockReturnValue(testResult);
+
+    /* make the assertions */
+    return loadJsonFromFile(testFile).then((retVal) => {
+      expect(retVal).toStrictEqual(testResult);
+      expect(readFile).toHaveBeenCalledTimes(1);
+      expect(readFile).toHaveBeenCalledWith(testFile, expect.anything());
+      expect(JSON.parse).toHaveBeenCalledTimes(1);
+      expect(JSON.parse).toHaveBeenCalledWith("foo");
+    });
+  });
 });
