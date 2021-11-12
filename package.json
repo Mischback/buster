@@ -1,4 +1,27 @@
 {
+  "name": "@mischback/buster",
+  "description": "",
+  "version": "0.0.1-alpha-1",
+  "main": "dist/index.js",
+  "bin": {
+    "buster": "dist/cli.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mischback/buster.git"
+  },
+  "keywords": [],
+  "author": "Mischback",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Mischback/buster/issues"
+  },
+  "homepage": "https://github.com/Mischback/buster#readme",
+  "dependencies": {
+    "@mischback/fileobject-walker": "1.0.0",
+    "stdio": "2.1.1",
+    "tslog": "3.2.2"
+  },
   "devDependencies": {
     "@types/jest": "^27.0.2",
     "@types/node": "^16.11.6",
@@ -38,10 +61,5 @@
       "tsconfig.build.json"
     ],
     "packageManager": "npm"
-  },
-  "dependencies": {
-    "@mischback/fileobject-walker": "0.0.1-alpha-1",
-    "stdio": "^2.1.1",
-    "tslog": "^3.2.2"
   }
 }
