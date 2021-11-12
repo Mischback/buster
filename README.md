@@ -19,7 +19,7 @@ providing a manifest file to match the orginal filename to the new one.
 Just install _buster_ from **npm**:
 
 ```bash
-npm install --save-dev @mischback/buster
+$ npm install --save-dev @mischback/buster
 ```
 
 Most likely you will want to install it as a development dependency for internal
@@ -30,21 +30,64 @@ usage.
 After installation, _buster_ is available using the following command:
 
 ```bash
-npx buster
+$ npx buster
+```
+
+### Example Usage
+
+```bash
+$ tree .manual-test
+.manual-test
+├── blank.css
+├── index.ts
+└── lib
+    └── hashwalker.ts
+
+$ npx buster -i "./.manual-test" -e "ts"
+[date and time]  INFO [buster] No mode specified, using "copy"
+[date and time]  INFO [buster] No output file specified, using "asset-manifest.json"
+
+$ tree .manual-test
+.manual-test
+├── asset-manifest.json
+├── blank.css
+├── index.dd99a19417.ts
+├── index.ts
+└── lib
+    ├── hashwalker.84f1a289e8.ts
+    └── hashwalker.ts
+
+$ cat .manual-test/asset-manifest.json
+{"index.ts":"index.dd99a19417.ts","lib/hashwalker.ts":"lib/hashwalker.84f1a289e8.ts"}%
 ```
 
 ## Configuration
 
 _buster_ is configured by command line parameters.
 
-- `--commonPathLength`: manually override the length of filepath's that is to be preserved in the manifest file
+- `--commonPathLength`: manually override the length of filepath's that is to be
+  preserved in the manifest file
 - `--debug`, `-d`: activate debug mode, providing more log messages
+  - default: `false`
 - `--extension`, `-e`: a file extension to include during processing; may be specified multiple times
+  - default: `["css", "js"]`
 - `--hashLength`: the length of the hash to be appended to the filename
+  - default: `10`
 - `--input`, `-i`: the actual input file or directory
-- `--mode`, `-m`: operation mode, either `"copy"` or `"rename`"
+  - **mandator parameter**, no default value
+- `--mode`, `-m`: operation mode, either `"copy"` or `"rename"`
+  - default: `copy`
+  - `MODE_COPY` as specified by `copy` will copy the source file to a new file
+    with the content's hash appended to the filename
+  - `MODE_RENAME` as specified by `rename` will rename the existing file
 - `--outFile`, `-o`: filename and path of the manifest file to be created
+  - default: `"asset-manifest.json"`
+  - **Please note:** If just a filename is specified, the output file will be
+    created relative to `input`: if `input` is a directory, it will be placed
+    inside this directory; if `input` is a file, it will be placed into the same
+    directory; if a path and filename is specified, that location will be useds
 - `--quiet`, `-q`: suppress all log messages
+  - default: `false`
 
 ## Contributing
 
