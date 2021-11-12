@@ -4,14 +4,14 @@
 import { beforeAll, describe, expect, it, jest } from "@jest/globals";
 
 /* mock library imports */
-jest.mock("./json-interface");
+jest.mock("@mischback/min-async-json-interface");
 
 /* import the subject under test (SUT) */
 import { BusterManifestError, createManifestFile } from "./manifest";
 
 /* additional imports */
+import { writeJsonToFile } from "@mischback/min-async-json-interface";
 import { BusterConfig, MODE_COPY } from "./configure";
-import { writeJsonToFile } from "./json-interface";
 import { logger } from "./logging";
 import { HashWalkerResult } from "./hashwalker/hashwalker";
 

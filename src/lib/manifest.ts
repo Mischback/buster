@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 
 /* library imports */
+import { writeJsonToFile } from "@mischback/min-async-json-interface";
 
 /* internal imports */
 import { BusterConfig } from "./configure";
 import { BusterError } from "./errors";
 import { HashWalkerResult } from "./hashwalker/hashwalker";
-import { writeJsonToFile } from "./json-interface";
 import { logger } from "./logging";
 
 export class BusterManifestError extends BusterError {
