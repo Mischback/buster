@@ -35,6 +35,17 @@ npx buster
 
 ## Configuration
 
+_buster_ is configured by command line parameters.
+
+- `--commonPathLength`: manually override the length of filepath's that is to be preserved in the manifest file
+- `--debug`, `-d`: activate debug mode, providing more log messages
+- `--extension`, `-e`: a file extension to include during processing; may be specified multiple times
+- `--hashLength`: the length of the hash to be appended to the filename
+- `--input`, `-i`: the actual input file or directory
+- `--mode`, `-m`: operation mode, either `"copy"` or `"rename`"
+- `--outFile`, `-o`: filename and path of the manifest file to be created
+- `--quiet`, `-q`: suppress all log messages
+
 ## Contributing
 
 Issues, pull requests and feature requests are welcome. Just use the project's
