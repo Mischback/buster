@@ -25,7 +25,17 @@ export function loadJsonFromFile(filename: string): Promise<unknown> {
   return new Promise((resolve, reject) => {
     readFile(filename, "utf-8")
       .then((fileContent) => {
-        return resolve(JSON.parse(fileContent));
+        try {
+          const parsedContent = JSON.parse(fileContent) as unknown;
+          return resolve(parsedContent);
+        } catch (err) {
+          return reject(
+            new JsonInterfaceError(
+              `Error while parsing content of "${filename}"`,
+              err as Error
+            )
+          );
+        }
       })
       .catch((err: Error) => {
         return reject(

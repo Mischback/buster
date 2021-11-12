@@ -28,6 +28,26 @@ describe("loadJsonFromFile()...", () => {
     });
   });
 
+  it("...rejects with an error if JSON.parse() fails", () => {
+    /* define the parameter */
+    const testFile = "testfile";
+
+    /* setup mocks and spies */
+    (readFile as jest.Mock).mockResolvedValue("foo");
+    JSON.parse = jest.fn(() => {
+      throw new Error("foo");
+    });
+
+    /* make the assertions */
+    return loadJsonFromFile(testFile).catch((err) => {
+      expect(err).toBeInstanceOf(JsonInterfaceError);
+      expect(readFile).toHaveBeenCalledTimes(1);
+      expect(readFile).toHaveBeenCalledWith(testFile, expect.anything());
+      expect(JSON.parse).toHaveBeenCalledTimes(1);
+      expect(JSON.parse).toHaveBeenCalledWith("foo");
+    });
+  });
+
   it("...resolves with parsed JSON object", () => {
     /* define the parameter */
     const testFile = "testfile";
