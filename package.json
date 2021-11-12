@@ -1,6 +1,6 @@
 {
   "name": "@mischback/buster",
-  "description": "",
+  "description": "buster is a tool to support cache busting for static assets of a website.",
   "version": "0.0.1-alpha-1",
   "main": "dist/index.js",
   "bin": {
@@ -10,7 +10,14 @@
     "type": "git",
     "url": "git+https://github.com/Mischback/buster.git"
   },
-  "keywords": [],
+  "keywords": [
+    "cachebuster",
+    "cachebusting",
+    "cache busting",
+    "cache",
+    "busting",
+    "static assets"
+  ],
   "author": "Mischback",
   "license": "MIT",
   "bugs": {
