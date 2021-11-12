@@ -11,7 +11,11 @@ jest.mock("./lib/logging");
 import { busterMain } from "./main";
 
 /* additional imports */
-import { logger, suppressLogOutput } from "./lib/logging";
+import {
+  applyDebugConfiguration,
+  logger,
+  suppressLogOutput,
+} from "./lib/logging";
 import { getConfig } from "./lib/configure";
 
 /* Run these before actually starting the test suite */
@@ -53,6 +57,38 @@ describe("busterMain()...", () => {
     return busterMain(testArgv).catch((err) => {
       expect(err).toBe(70);
       expect(suppressLogOutput).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("...correctly activates debug mode", () => {
+    /* define the parameter */
+    const testArgv: string[] = ["doesn't", "matter", "-d"];
+
+    /* setup mocks and spies */
+    (getConfig as jest.Mock).mockRejectedValue(new Error("foo"));
+    (applyDebugConfiguration as jest.Mock).mockImplementation();
+
+    /* make the assertions */
+    return busterMain(testArgv).catch((err) => {
+      expect(err).toBe(70);
+      expect(applyDebugConfiguration).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("...overrides quiet mode with debug mode", () => {
+    /* define the parameter */
+    const testArgv: string[] = ["doesn't", "matter", "-q", "-d"];
+
+    /* setup mocks and spies */
+    (getConfig as jest.Mock).mockRejectedValue(new Error("foo"));
+    (suppressLogOutput as jest.Mock).mockImplementation();
+    (applyDebugConfiguration as jest.Mock).mockImplementation();
+
+    /* make the assertions */
+    return busterMain(testArgv).catch((err) => {
+      expect(err).toBe(70);
+      expect(suppressLogOutput).toHaveBeenCalledTimes(1);
+      expect(applyDebugConfiguration).toHaveBeenCalledTimes(1);
     });
   });
 });
