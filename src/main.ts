@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: MIT
 
+/* library imports */
 import { Config } from "stdio/dist/getopt";
 import { FileObjectWalkerError } from "@mischback/fileobject-walker";
 
+/* internal imports */
 import {
+  BusterConfig,
   BusterConfigError,
   checkConfig,
   cmdLineOptions,
@@ -17,6 +20,7 @@ import {
   logger,
   suppressLogOutput,
 } from "./lib/logging";
+import { createManifestFile } from "./lib/manifest";
 
 /* *** INTERNAL CONSTANTS *** */
 const EXIT_SUCCESS = 0; // sysexits.h: 0 -> successful termination
@@ -59,15 +63,20 @@ export function busterMain(argv: string[]): Promise<number> {
       applyDebugConfiguration();
     }
 
+    let config: BusterConfig;
     getConfig(argv)
       .then(checkConfig)
-      .then((config) => {
+      .then((checkedConfig) => {
+        config = checkedConfig;
         logger.debug(config);
         return Promise.resolve(config);
       })
       .then(hashWalker)
       .then((result) => {
-        logger.info(result);
+        logger.debug(result);
+        return createManifestFile(result, config);
+      })
+      .then(() => {
         return resolve(EXIT_SUCCESS);
       })
       .catch((err) => {
