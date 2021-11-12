@@ -26,6 +26,7 @@
   "homepage": "https://github.com/Mischback/buster#readme",
   "dependencies": {
     "@mischback/fileobject-walker": "1.0.0",
+    "@mischback/min-async-json-interface": "^1.0.0",
     "stdio": "2.1.1",
     "tslog": "3.2.2"
   },
