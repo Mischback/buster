@@ -20,7 +20,7 @@ import {
   logger,
   suppressLogOutput,
 } from "./lib/logging";
-import { createManifestFile } from "./lib/manifest";
+import { BusterManifestError, createManifestFile } from "./lib/manifest";
 
 /* *** INTERNAL CONSTANTS *** */
 const EXIT_SUCCESS = 0; // sysexits.h: 0 -> successful termination
@@ -89,7 +89,8 @@ export function busterMain(argv: string[]): Promise<number> {
         if (
           err instanceof BusterHashError ||
           err instanceof BusterFileSystemError ||
-          err instanceof FileObjectWalkerError
+          err instanceof FileObjectWalkerError ||
+          err instanceof BusterManifestError
         ) {
           logger.error(err.message);
           logger.fatal("Error during processing!");
