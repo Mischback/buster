@@ -15,6 +15,13 @@ export class BusterManifestError extends BusterError {
   }
 }
 
+/**
+ * Create the manifest file containing the results from hashWalker()
+ *
+ * @param result - The result of hashWalker()
+ * @param config - An instance of {@link BusterConfig}
+ * @returns A Promise, resolving to void
+ */
 export function createManifestFile(
   result: HashWalkerResult,
   config: BusterConfig
