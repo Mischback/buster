@@ -26,6 +26,21 @@ beforeAll(() => {
 });
 
 describe("busterMain()...", () => {
+  it("...attaches SIGINT handler", () => {
+    /* define the parameter */
+    const testArgv: string[] = ["doesn't", "matter", "-q"];
+
+    /* setup mocks and spies */
+    (getConfig as jest.Mock).mockRejectedValue(new Error("foo"));
+    const processSpy = jest.spyOn(process, "on");
+
+    /* make the assertions */
+    return busterMain(testArgv).catch((err) => {
+      expect(err).toBe(70);
+      expect(processSpy).toHaveBeenCalledTimes(1);
+    });
+  });
+
   it("...correctly activates quiet mode", () => {
     /* define the parameter */
     const testArgv: string[] = ["doesn't", "matter", "-q"];
