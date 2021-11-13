@@ -6,22 +6,24 @@ import { beforeAll, describe, expect, it, jest } from "@jest/globals";
 /* mock library imports */
 jest.mock("./lib/configure");
 jest.mock("./lib/logging");
+jest.mock("./lib/manifest");
 jest.mock("./lib/hashwalker/hashwalker");
 
 /* import the subject under test (SUT) */
 import { busterMain } from "./main";
 
 /* additional imports */
+import { FileObjectWalkerError } from "@mischback/fileobject-walker";
 import {
   applyDebugConfiguration,
   logger,
   suppressLogOutput,
 } from "./lib/logging";
 import { getConfig, BusterConfigError, checkConfig } from "./lib/configure";
-import { hashWalker } from "./lib/hashwalker/hashwalker";
-import { BusterHashError } from "./lib/hashwalker/hash";
+import { BusterManifestError, createManifestFile } from "./lib/manifest";
 import { BusterFileSystemError } from "./lib/hashwalker/filesystem";
-import { FileObjectWalkerError } from "@mischback/fileobject-walker";
+import { BusterHashError } from "./lib/hashwalker/hash";
+import { hashWalker } from "./lib/hashwalker/hashwalker";
 
 /* Run these before actually starting the test suite */
 beforeAll(() => {
@@ -200,6 +202,29 @@ describe("busterMain()...", () => {
     (checkConfig as jest.Mock).mockResolvedValue("foo");
     (hashWalker as jest.Mock).mockRejectedValue(
       new FileObjectWalkerError(testErrorMessage)
+    );
+    const loggerErrorSpy = jest.spyOn(logger, "error");
+    const loggerFatalSpy = jest.spyOn(logger, "fatal");
+
+    /* make the assertions */
+    return busterMain(testArgv).catch((err) => {
+      expect(err).toBe(10);
+      expect(loggerErrorSpy).toHaveBeenCalledTimes(1);
+      expect(loggerErrorSpy).toHaveBeenCalledWith(testErrorMessage);
+      expect(loggerFatalSpy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("...returns EXIT_PROCESSING_ERROR on BusterManifestError", () => {
+    /* define the parameter */
+    const testArgv: string[] = ["doesn't", "matter"];
+    const testErrorMessage = "testError";
+
+    /* setup mocks and spies */
+    (getConfig as jest.Mock).mockResolvedValue("foo");
+    (checkConfig as jest.Mock).mockResolvedValue("foo");
+    (createManifestFile as jest.Mock).mockRejectedValue(
+      new BusterManifestError(testErrorMessage)
     );
     const loggerErrorSpy = jest.spyOn(logger, "error");
     const loggerFatalSpy = jest.spyOn(logger, "fatal");
