@@ -16,7 +16,7 @@ import {
   logger,
   suppressLogOutput,
 } from "./lib/logging";
-import { getConfig, BusterConfigError } from "./lib/configure";
+import { getConfig, BusterConfigError, checkConfig } from "./lib/configure";
 
 /* Run these before actually starting the test suite */
 beforeAll(() => {
@@ -92,13 +92,37 @@ describe("busterMain()...", () => {
     });
   });
 
-  it("...returns EXIT_CONFIG_ERROR on BusterConfigError", () => {
+  it("...returns EXIT_CONFIG_ERROR on BusterConfigError by getConfig()", () => {
     /* define the parameter */
     const testArgv: string[] = ["doesn't", "matter"];
     const testErrorMessage = "testError";
 
     /* setup mocks and spies */
     (getConfig as jest.Mock).mockRejectedValue(
+      new BusterConfigError(testErrorMessage)
+    );
+    const loggerErrorSpy = jest.spyOn(logger, "error");
+    const loggerFatalSpy = jest.spyOn(logger, "fatal");
+
+    /* make the assertions */
+    return busterMain(testArgv).catch((err) => {
+      expect(err).toBe(78);
+      expect(loggerErrorSpy).toHaveBeenCalledTimes(1);
+      // BusterConfigError is mocked aswell, so it does not work to access its
+      // message in an expect block.
+      // expect(loggerErrorSpy).toHaveBeenCalledWith(testErrorMessage);
+      expect(loggerFatalSpy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("...returns EXIT_CONFIG_ERROR on BusterConfigError by checkConfig()", () => {
+    /* define the parameter */
+    const testArgv: string[] = ["doesn't", "matter"];
+    const testErrorMessage = "testError";
+
+    /* setup mocks and spies */
+    (getConfig as jest.Mock).mockResolvedValue("foo");
+    (checkConfig as jest.Mock).mockRejectedValue(
       new BusterConfigError(testErrorMessage)
     );
     const loggerErrorSpy = jest.spyOn(logger, "error");
