@@ -98,7 +98,7 @@ dev/coverage : | $(STAMP_NODE_INSTALL)
 
 # Run the test suite.
 dev/test : | $(STAMP_NODE_INSTALL)
-	npx jest --config .jestrc.json --verbose
+	npx jest --config .jestrc.json --verbose main.spec.ts
 .PHONY : dev/test
 
 # Run eslint against all files in the current directory.
