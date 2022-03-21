@@ -27,7 +27,7 @@
   "dependencies": {
     "@mischback/fileobject-walker": "1.0.0",
     "stdio": "2.1.1",
-    "tslog": "3.3.2"
+    "tslog": "3.3.3"
   },
   "devDependencies": {
     "@types/jest": "^27.0.2",
