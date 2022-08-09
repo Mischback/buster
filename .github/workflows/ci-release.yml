@@ -6,17 +6,21 @@ on:
 
 jobs:
   build:
+    name: Release to NPM
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
       # Setup .npmrc file to publish to npm
-      - uses: actions/setup-node@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
         with:
           node-version: "16.x"
           registry-url: "https://registry.npmjs.org"
-      - run: npm ci
-      - run: make ci/linting
-      - run: make ci/testing
-      - run: make ci/release
+      - name: Install Dependencies
+        run: npm ci
+      - name: Perform the Release
+        run: make ci/release
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
