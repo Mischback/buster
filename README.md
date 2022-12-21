@@ -4,7 +4,7 @@
 [![install size](https://packagephobia.com/badge?p=@mischback/buster)](https://packagephobia.com/result?p=@mischback/buster)
 
 ![GitHub package.json version (development)](https://img.shields.io/github/package-json/v/mischback/buster/development?style=flat)
-![GitHub branch checks state](https://img.shields.io/github/workflow/status/mischback/buster/CI%20default%20branch?style=flat&logo=github)
+![GitHub branch checks state](https://img.shields.io/github/actions/workflow/status/mischback/buster/ci-default.yml?branch=development&style=flat&logo=github)
 [![Coverage Status](https://coveralls.io/repos/github/Mischback/buster/badge.svg)](https://coveralls.io/github/Mischback/buster)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat&logo=prettier)](https://github.com/prettier/prettier)
 ![GitHub License](https://img.shields.io/github/license/mischback/buster?style=flat)
