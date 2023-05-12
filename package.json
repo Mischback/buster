@@ -1,7 +1,7 @@
 {
   "name": "@mischback/buster",
   "description": "buster is a tool to support cache busting for static assets of a website.",
-  "version": "0.0.1-alpha-1",
+  "version": "0.0.1-alpha-2",
   "main": "dist/index.js",
   "bin": {
     "buster": "dist/cli.js"
@@ -27,18 +27,18 @@
   "dependencies": {
     "@mischback/fileobject-walker": "1.0.0",
     "stdio": "2.1.1",
-    "tslog": "3.2.2"
+    "tslog": "3.3.4"
   },
   "devDependencies": {
     "@types/jest": "^27.0.2",
-    "@types/node": "^16.11.6",
+    "@types/node": "^20.1.1",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
-    "clean-publish": "^3.4.2",
+    "clean-publish": "^4.0.0",
     "eslint": "^8.0.1",
     "eslint-config-prettier": "^8.3.0",
     "jest": "^27.2.5",
-    "lint-staged": "^11.2.3",
+    "lint-staged": "^13.0.0",
     "prettier": "^2.4.1",
     "simple-git-hooks": "^2.6.1",
     "ts-jest": "^27.0.7",
