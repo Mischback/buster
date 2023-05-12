@@ -14,6 +14,14 @@
 _buster_ will hash the file's content and append the hash to the filename,
 providing a manifest file to match the orginal filename to the new one.
 
+## Out of Maintanence
+
+_buster_ is **out of maintenance** until further notice.
+
+There will be no additional features, and **no bugfixes**. If you're interested
+in taking over this project, you may use GitHub to get in touch (e.g. by
+posting an issue in this repository).
+
 ## Installation
 
 Just install _buster_ from **npm**:
